@@ -1,0 +1,42 @@
+{
+  "name": "nexus-map",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Planejador multimodal de rotas baseado em dados geográficos reais (carro, a pé, metrô/trilhos e avião).",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c cyan,magenta \"npm run dev -w @nexus/server\" \"npm run dev -w @nexus/client\"",
+    "build": "npm run build -w @nexus/server && npm run build -w @nexus/client",
+    "start": "npm run start -w @nexus/server",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.4",
+    "concurrently": "^10.0.5",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}

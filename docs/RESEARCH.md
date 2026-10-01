@@ -278,9 +278,20 @@ Cotas gratuitas mensais por SKU: Essentials 10.000, Pro 5.000, Enterprise 1.000.
 | Time Zone | 10.000 | 5,00 |
 | Photorealistic 3D (Map Tiles) | 1.000 | 6,00 |
 
+Gatilhos de SKU da Routes API ([SKU details](https://developers.google.com/maps/billing-and-pricing/sku-details)):
+**Pro** = `TRAFFIC_AWARE`/`TRAFFIC_AWARE_OPTIMAL`, 11–25 waypoints, `optimizeWaypointOrder`,
+modificadores de localização; **Enterprise** = rota de duas rodas, **cálculo de pedágio**,
+**informação de trânsito na polilinha**. "If you request any features from a higher-priced SKU,
+then your request is billed at the higher rate."
+
 Consequências de projeto:
-- Rotas de carro usam `TRAFFIC_AWARE` → SKU **Pro**. "Chegar até" de carro faz até 4 chamadas
-  (ver §5.4) — documentado.
+- A rota de carro exibida usa `TRAFFIC_AWARE` + `TRAFFIC_ON_POLYLINE` + `TOLLS` → SKU
+  **Enterprise** (US$ 15/1.000, 1.000 grátis/mês). Ambos os extras podem ser desligados por
+  variável de ambiente (`ROUTES_TRAFFIC_ON_POLYLINE`, `ROUTES_TOLLS`) para cair no SKU Pro.
+- As chamadas internas do "Chegar até" de carro (iterações) e as estimativas de trajeto até
+  aeroportos usam só `TRAFFIC_AWARE` com field mask mínima (`routes.duration`, SKU Pro); apenas
+  a chamada final pede polilinha com trânsito e pedágio. No pior caso: 3 chamadas Pro + 1
+  Enterprise.
 - Autocomplete com *session token* + debounce de 300 ms + mínimo de 3 caracteres.
 - Cache no servidor (LRU com TTL curto) para rotas e voos; TTL longo para fusos e aeroportos.
 - AeroAPI Personal: 10 result sets/min → limitamos os pares de aeroportos consultados.
