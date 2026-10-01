@@ -21,6 +21,8 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    // Fontes sempre como arquivo: a CSP do servidor não permite fontes em data: URI.
+    assetsInlineLimit: (filePath) => (/\.(woff2?|ttf|otf)$/.test(filePath) ? false : undefined),
   },
   test: {
     name: 'client',
