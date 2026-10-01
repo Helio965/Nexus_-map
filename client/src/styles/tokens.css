@@ -1,0 +1,59 @@
+/*
+ * Nexus — "instrumento de campo cartográfico".
+ * Painel escuro e sólido, grade fina de levantamento topográfico, numerais monoespaçados
+ * para horários e durações, âmbar de sinalização como acento único.
+ */
+:root {
+  color-scheme: dark;
+
+  --ink-950: #080c12;
+  --ink-900: #0b1017;
+  --ink-850: #0f141b;
+  --ink-800: #141b24;
+  --ink-750: #18202b;
+  --ink-700: #1d2633;
+  --ink-600: #283446;
+  --ink-500: #3a4a60;
+
+  --paper: #eef1f5;
+  --paper-dim: #b4bfcc;
+  --paper-faint: #8794a7;
+
+  --signal: #f5a524;
+  --signal-strong: #ffb84d;
+  --signal-ink: #1b1202;
+
+  --ok: #2fd07f;
+  --warn: #f5a524;
+  --err: #ff6b6e;
+  --info: #6cb4ff;
+
+  --live: #2fd07f;
+  --predicted: #6cb4ff;
+  --static: #c3ccd8;
+  --none: #8794a7;
+
+  --phase-red: #ff5a5f;
+  --phase-amber: #f5a524;
+  --phase-green: #2fd07f;
+
+  --mode-drive: #2b8cff;
+  --mode-walk: #12b5a6;
+  --mode-rail: #e0237f;
+  --mode-flight: #ff7a1a;
+
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+
+  --hairline: 1px solid rgba(180, 191, 204, 0.12);
+  --hairline-strong: 1px solid rgba(180, 191, 204, 0.24);
+  --shadow-panel: 0 24px 60px rgba(4, 7, 12, 0.55), 0 2px 0 rgba(255, 255, 255, 0.03) inset;
+  --shadow-chip: 0 6px 18px rgba(4, 7, 12, 0.45);
+
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Trebuchet MS', sans-serif;
+  --font-body: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
+  --font-data: 'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
