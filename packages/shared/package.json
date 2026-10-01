@@ -12,7 +12,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@googlemaps/polyline-codec": "^1.0.28",
     "luxon": "^3.7.2"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import type { LatLng } from './geo';
 
-export type PlaceSource = 'google_places' | 'device_geolocation';
+export type PlaceSource = 'google_places' | 'device_geolocation' | 'ourairports';
 export type TimeZoneSource = 'google_places' | 'google_time_zone_api' | 'device';
 
 /** Local geograficamente validado (sempre vem de um provedor, nunca de texto livre). */
