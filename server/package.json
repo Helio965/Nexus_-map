@@ -1,0 +1,28 @@
+{
+  "name": "@nexus/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "API REST do Nexus Map: integra Google Maps Platform, FlightAware AeroAPI, OurAirports, OpenStreetMap e Hamburg TLD.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "node scripts/build.mjs",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@nexus/shared": "0.1.0",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "https-proxy-agent": "^9.1.0",
+    "mqtt": "^5.16.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "esbuild": "^0.28.2",
+    "supertest": "^7.3.0",
+    "tsx": "^4.23.15"
+  }
+}

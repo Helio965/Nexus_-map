@@ -1,0 +1,29 @@
+# Dependências
+node_modules/
+
+# Builds
+dist/
+build/
+*.tsbuildinfo
+
+# Variáveis de ambiente (NUNCA versionar chaves reais)
+.env
+.env.*
+!.env.example
+
+# Caches locais (ex.: base de aeroportos baixada em tempo de execução)
+.cache/
+server/.cache/
+coverage/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
