@@ -73,7 +73,8 @@ export function matchLaneConnection(
 ): LaneMatch | null {
   const ingress = conn.lines[0];
   const egress = conn.lines[conn.lines.length - 1];
-  if (!ingress || !egress || conn.lines.length < 2 || ingress.length < 2 || egress.length < 2) return null;
+  if (!ingress || !egress || conn.lines.length < 2 || ingress.length < 2 || egress.length < 2)
+    return null;
 
   const stop = ingress[0]!;
   const upstream = pointAlongPath(ingress, Math.min(tol.probeDistance, pathLengthMeters(ingress)))!;
@@ -83,8 +84,14 @@ export function matchLaneConnection(
   const pUp = projectOntoPath(upstream, route.path, route.cumulative);
   const pDown = projectOntoPath(downstream, route.path, route.cumulative);
   if (!pStop || !pUp || !pDown) return null;
-  if (pStop.lateral > tol.stopLateral || pUp.lateral > tol.laneLateral || pDown.lateral > tol.laneLateral) return null;
-  if (!(pUp.distanceAlong < pStop.distanceAlong && pStop.distanceAlong < pDown.distanceAlong)) return null;
+  if (
+    pStop.lateral > tol.stopLateral ||
+    pUp.lateral > tol.laneLateral ||
+    pDown.lateral > tol.laneLateral
+  )
+    return null;
+  if (!(pUp.distanceAlong < pStop.distanceAlong && pStop.distanceAlong < pDown.distanceAlong))
+    return null;
   if (pDown.distanceAlong - pUp.distanceAlong > tol.maxSpan) return null;
 
   const approachBearing = bearingDegrees(upstream, stop);

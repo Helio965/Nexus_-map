@@ -42,8 +42,14 @@ describe('localDateTimeToInstant', () => {
   });
 
   it('rejeita formato inválido e fuso inválido', () => {
-    expect(localDateTimeToInstant('20/10/2026', '08:00', 'UTC')).toEqual({ ok: false, reason: 'invalid_format' });
-    expect(localDateTimeToInstant('2026-10-20', '8h', 'UTC')).toEqual({ ok: false, reason: 'invalid_format' });
+    expect(localDateTimeToInstant('20/10/2026', '08:00', 'UTC')).toEqual({
+      ok: false,
+      reason: 'invalid_format',
+    });
+    expect(localDateTimeToInstant('2026-10-20', '8h', 'UTC')).toEqual({
+      ok: false,
+      reason: 'invalid_format',
+    });
     expect(localDateTimeToInstant('2026-10-20', '08:00', 'Mars/Olympus')).toEqual({
       ok: false,
       reason: 'invalid_zone',
@@ -60,9 +66,18 @@ describe('fusos horários', () => {
 
   it('mostra o mesmo instante em horários locais diferentes', () => {
     const instant = '2026-10-20T17:10:00Z';
-    expect(instantToLocalParts(instant, 'America/Sao_Paulo')).toEqual({ date: '2026-10-20', time: '14:10' });
-    expect(instantToLocalParts(instant, 'Europe/Lisbon')).toEqual({ date: '2026-10-20', time: '18:10' });
-    expect(instantToLocalParts(instant, 'Asia/Tokyo')).toEqual({ date: '2026-10-21', time: '02:10' });
+    expect(instantToLocalParts(instant, 'America/Sao_Paulo')).toEqual({
+      date: '2026-10-20',
+      time: '14:10',
+    });
+    expect(instantToLocalParts(instant, 'Europe/Lisbon')).toEqual({
+      date: '2026-10-20',
+      time: '18:10',
+    });
+    expect(instantToLocalParts(instant, 'Asia/Tokyo')).toEqual({
+      date: '2026-10-21',
+      time: '02:10',
+    });
   });
 
   it('calcula a diferença de dia de calendário entre fusos (voo noturno)', () => {

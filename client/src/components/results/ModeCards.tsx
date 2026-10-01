@@ -42,22 +42,34 @@ function cardDetail(mode: TravelMode, o: RouteOption): string {
   }
   if (mode === 'flight') {
     const f = o.segments.find((s) => s.kind === 'flight');
-    return f && f.kind === 'flight' ? `${f.from.iata} → ${f.to.iata} · voo ${f.flight.ident}` : 'voo direto';
+    return f && f.kind === 'flight'
+      ? `${f.from.iata} → ${f.to.iata} · voo ${f.flight.ident}`
+      : 'voo direto';
   }
   return o.distanceMeters !== undefined ? formatDistance(o.distanceMeters) : '';
 }
 
-function DeadlineLine({ entry, deadline }: { entry: ComparisonEntry; deadline?: ComparisonResult['deadline'] }) {
+function DeadlineLine({
+  entry,
+  deadline,
+}: {
+  entry: ComparisonEntry;
+  deadline?: ComparisonResult['deadline'];
+}) {
   if (!deadline || entry.meetsDeadline === undefined) return null;
   if (entry.meetsDeadline) {
     const slack = Math.max(0, entry.slackSeconds ?? 0);
-    return <p className="deadline deadline--ok">✓ Atende ao horário{slack >= 60 ? ` (folga de ${formatDuration(slack)})` : ''}</p>;
+    return (
+      <span className="deadline deadline--ok">
+        ✓ Atende ao horário{slack >= 60 ? ` (folga de ${formatDuration(slack)})` : ''}
+      </span>
+    );
   }
   return (
-    <p className="deadline deadline--fail">
+    <span className="deadline deadline--fail">
       ✗ NÃO atende ao horário
       {entry.departureInPast ? ' — a saída necessária já passou' : ''}
-    </p>
+    </span>
   );
 }
 
@@ -77,35 +89,40 @@ export function ModeCards({ comparison, selectedMode, recommendedMode, onSelect 
         const selectable = e.status === 'available' && !!o;
         const content = (
           <>
-            <div className="mode-card__head">
+            <span className="mode-card__head">
               <ModeIcon mode={e.mode} size={22} />
               <span className="mode-card__name">{MODE_LABELS[e.mode]}</span>
               {recommendedMode === e.mode && <span className="tag tag--rec">Recomendado</span>}
-            </div>
+            </span>
             {e.status === 'pending' && (
-              <div className="mode-card__pending">
+              <span className="mode-card__pending">
                 <Spinner label={`Calculando ${MODE_LABELS[e.mode]}`} />
                 <span className="skeleton__line" />
-              </div>
+              </span>
             )}
             {selectable && o && (
               <>
-                <p className="mode-card__duration">{formatDuration(o.durationSeconds)}</p>
-                <p className="mode-card__meta">{cardDetail(e.mode, o)}</p>
-                <p className="mode-card__times">
+                <span className="mode-card__duration">{formatDuration(o.durationSeconds)}</span>
+                <span className="mode-card__meta">{cardDetail(e.mode, o)}</span>
+                <span className="mode-card__times">
                   <span>Saída {formatTimePoint(o.departure)}</span>
                   <span>Chegada {formatTimePoint(o.arrival, o.departure)}</span>
-                </p>
+                </span>
                 <DeadlineLine entry={e} deadline={comparison.deadline} />
                 <DataBadge freshness={o.traffic.freshness} title={o.traffic.note} />
               </>
             )}
-            {(e.status === 'unavailable' || e.status === 'error' || e.status === 'not_configured') && (
-              <p className={`mode-card__message mode-card__message--${e.status}`}>
+            {(e.status === 'unavailable' ||
+              e.status === 'error' ||
+              e.status === 'not_configured') && (
+              <span className={`mode-card__message mode-card__message--${e.status}`}>
                 {e.status === 'not_configured' && <strong>Configuração necessária. </strong>}
                 {e.status === 'error' && <strong>Falha na consulta. </strong>}
-                {e.message ?? (e.mode === 'flight' ? 'Indisponível para este trajeto.' : 'Sem opção para este trajeto.')}
-              </p>
+                {e.message ??
+                  (e.mode === 'flight'
+                    ? 'Indisponível para este trajeto.'
+                    : 'Sem opção para este trajeto.')}
+              </span>
             )}
           </>
         );
@@ -121,7 +138,10 @@ export function ModeCards({ comparison, selectedMode, recommendedMode, onSelect 
                 {content}
               </button>
             ) : (
-              <div className={`mode-card mode-card--${e.mode} mode-card--${e.status}`} aria-busy={e.status === 'pending'}>
+              <div
+                className={`mode-card mode-card--${e.mode} mode-card--${e.status}`}
+                aria-busy={e.status === 'pending'}
+              >
                 {content}
               </div>
             )}
@@ -158,8 +178,8 @@ export function RecommendationCard({
             ))}
           </ul>
           <p className="recommendation__criteria">
-            Critérios, em ordem: chegar no prazo → duração total → horário de saída → baldeações → trânsito. Calculado a partir dos dados retornados, sem
-            opinião automatizada.
+            Critérios, em ordem: chegar no prazo → duração total → horário de saída → baldeações →
+            trânsito. Calculado a partir dos dados retornados, sem opinião automatizada.
           </p>
         </>
       ) : (

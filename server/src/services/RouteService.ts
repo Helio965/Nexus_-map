@@ -85,9 +85,14 @@ export class RouteService {
     let scheduleNote: string | undefined;
     let method: string;
 
-    if (req.time.mode === 'depart_at' && req.time.instant && diffSeconds(nowIso, req.time.instant) > NOW_SLACK_S) {
+    if (
+      req.time.mode === 'depart_at' &&
+      req.time.instant &&
+      diffSeconds(nowIso, req.time.instant) > NOW_SLACK_S
+    ) {
       departure = req.time.instant;
-      method = 'Saída no horário escolhido; duração com previsão de trânsito para esse horário (TRAFFIC_AWARE + departureTime).';
+      method =
+        'Saída no horário escolhido; duração com previsão de trânsito para esse horário (TRAFFIC_AWARE + departureTime).';
     } else if (req.time.mode === 'arrive_by' && req.time.instant) {
       const deadline = req.time.instant;
       const solution = await solveDepartureForArrival({
@@ -99,7 +104,8 @@ export class RouteService {
         },
       });
       if (solution.feasible) {
-        departure = diffSeconds(nowIso, solution.departure) > NOW_SLACK_S ? solution.departure : undefined;
+        departure =
+          diffSeconds(nowIso, solution.departure) > NOW_SLACK_S ? solution.departure : undefined;
       } else {
         scheduleNote = `Para chegar até ${formatClock(deadline, req.destination.timeZone)} seria necessário sair às ${formatClock(solution.requiredDeparture, req.origin.timeZone)}, horário que já passou. Exibindo a saída agora.`;
       }
@@ -116,7 +122,10 @@ export class RouteService {
     if (req.time.mode === 'arrive_by' && req.time.instant && departure) {
       const main = res.routes?.[0];
       const mainDuration = parseGoogleDuration(main?.duration);
-      if (mainDuration !== undefined && diffSeconds(addSeconds(departure, mainDuration), req.time.instant) < 0) {
+      if (
+        mainDuration !== undefined &&
+        diffSeconds(addSeconds(departure, mainDuration), req.time.instant) < 0
+      ) {
         const corrected = floorToMinute(addSeconds(req.time.instant, -mainDuration));
         if (diffSeconds(nowIso, corrected) > NOW_SLACK_S) {
           departure = corrected;
@@ -130,7 +139,10 @@ export class RouteService {
     const dep = departure ?? nowIso;
     const options = routes.map((route, i) =>
       this.toGroundOption('drive', route, i, dep, req, {
-        traffic: describeTraffic(route, { departsNow: departure === undefined, fallback: res.fallbackInfo }),
+        traffic: describeTraffic(route, {
+          departsNow: departure === undefined,
+          fallback: res.fallbackInfo,
+        }),
         tolls: mapTolls(route, this.opts.tolls),
         scheduleNote,
         withTraffic: this.opts.trafficOnPolyline,
@@ -140,7 +152,8 @@ export class RouteService {
     return {
       mode: 'drive',
       status: options.length > 0 ? 'available' : 'unavailable',
-      message: options.length > 0 ? undefined : 'Não encontramos uma rota de carro entre esses pontos.',
+      message:
+        options.length > 0 ? undefined : 'Não encontramos uma rota de carro entre esses pontos.',
       options,
       warnings: [],
       provider: ROUTES_PROVIDER,
@@ -243,15 +256,28 @@ export class RouteService {
     signal?: AbortSignal,
   ): Promise<{ res: RawComputeRoutesResponse; usedReferencePoint: boolean }> {
     const needsCheck = !!(origin.addressQuery || destination.addressQuery);
-    if (!needsCheck) return { res: await this.routes.computeRoutes(build(origin, destination), fieldMask, signal), usedReferencePoint: false };
+    if (!needsCheck)
+      return {
+        res: await this.routes.computeRoutes(build(origin, destination), fieldMask, signal),
+        usedReferencePoint: false,
+      };
 
-    const res = await this.routes.computeRoutes(build(origin, destination), `${fieldMask},geocodingResults`, signal);
+    const res = await this.routes.computeRoutes(
+      build(origin, destination),
+      `${fieldMask},geocodingResults`,
+      signal,
+    );
     const ok =
-      geocodeMatches(origin, res.geocodingResults?.origin) && geocodeMatches(destination, res.geocodingResults?.destination);
+      geocodeMatches(origin, res.geocodingResults?.origin) &&
+      geocodeMatches(destination, res.geocodingResults?.destination);
     if (ok && res.routes?.length) return { res, usedReferencePoint: false };
     const strip = (e: Endpoint): Endpoint => ({ ...e, addressQuery: undefined });
     return {
-      res: await this.routes.computeRoutes(build(strip(origin), strip(destination)), fieldMask, signal),
+      res: await this.routes.computeRoutes(
+        build(strip(origin), strip(destination)),
+        fieldMask,
+        signal,
+      ),
       usedReferencePoint: true,
     };
   }
@@ -261,7 +287,9 @@ export class RouteService {
   async walk(req: RouteRequest, signal?: AbortSignal): Promise<ModeResult> {
     const nowIso = toInstant(this.now());
     const departAt =
-      req.time.mode === 'depart_at' && req.time.instant && diffSeconds(nowIso, req.time.instant) > NOW_SLACK_S
+      req.time.mode === 'depart_at' &&
+      req.time.instant &&
+      diffSeconds(nowIso, req.time.instant) > NOW_SLACK_S
         ? req.time.instant
         : undefined;
     const body: ComputeRoutesBody = {
@@ -288,7 +316,10 @@ export class RouteService {
         method = 'Saída = horário-limite − duração da caminhada informada pela Routes API.';
       }
       return this.toGroundOption('walk', route, i, dep, req, {
-        traffic: { freshness: 'static', note: 'Tempo de caminhada estimado pelo mecanismo de rotas; não usa dados de trânsito.' },
+        traffic: {
+          freshness: 'static',
+          note: 'Tempo de caminhada estimado pelo mecanismo de rotas; não usa dados de trânsito.',
+        },
         scheduleNote,
         withTraffic: false,
         extraWarnings: [WALK_BETA_WARNING],
@@ -308,11 +339,19 @@ export class RouteService {
 
   /* --------------------------------------------------------------- internos */
 
-  private baseBody(origin: PlaceSummary, destination: PlaceSummary, travelMode: ComputeRoutesBody['travelMode']) {
+  private baseBody(
+    origin: PlaceSummary,
+    destination: PlaceSummary,
+    travelMode: ComputeRoutesBody['travelMode'],
+  ) {
     return this.baseBodyFor(origin, destination, travelMode);
   }
 
-  private baseBodyFor(origin: Endpoint, destination: Endpoint, travelMode: ComputeRoutesBody['travelMode']) {
+  private baseBodyFor(
+    origin: Endpoint,
+    destination: Endpoint,
+    travelMode: ComputeRoutesBody['travelMode'],
+  ) {
     return {
       origin: toWaypoint(origin),
       destination: toWaypoint(destination),
@@ -323,7 +362,11 @@ export class RouteService {
     };
   }
 
-  private computeDriveFull(req: RouteRequest, departure: string | undefined, signal?: AbortSignal): Promise<RawComputeRoutesResponse> {
+  private computeDriveFull(
+    req: RouteRequest,
+    departure: string | undefined,
+    signal?: AbortSignal,
+  ): Promise<RawComputeRoutesResponse> {
     const extra: ComputeRoutesBody['extraComputations'] = [];
     if (this.opts.trafficOnPolyline) extra.push('TRAFFIC_ON_POLYLINE');
     if (this.opts.tolls) extra.push('TOLLS');
@@ -364,7 +407,10 @@ export class RouteService {
       staticDurationSeconds: staticDuration,
       steps: mapSteps(route.legs?.flatMap((l) => l.steps ?? [])),
       traffic: extra.withTraffic
-        ? mapTrafficIntervals(route.travelAdvisory?.speedReadingIntervals, polylinePointCount(encoded))
+        ? mapTrafficIntervals(
+            route.travelAdvisory?.speedReadingIntervals,
+            polylinePointCount(encoded),
+          )
         : undefined,
       departure: { instant: departure, timeZone: req.origin.timeZone },
       arrival: { instant: arrival, timeZone: req.destination.timeZone },

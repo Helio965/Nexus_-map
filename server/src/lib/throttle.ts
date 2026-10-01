@@ -15,7 +15,8 @@ export class SlidingWindowThrottle {
   /** Tempo (ms) até haver vaga; 0 se há vaga agora. */
   waitTimeMs(): number {
     const t = this.now();
-    while (this.timestamps.length > 0 && this.timestamps[0]! <= t - this.windowMs) this.timestamps.shift();
+    while (this.timestamps.length > 0 && this.timestamps[0]! <= t - this.windowMs)
+      this.timestamps.shift();
     if (this.timestamps.length < this.maxPerWindow) return 0;
     return this.timestamps[0]! + this.windowMs - t;
   }

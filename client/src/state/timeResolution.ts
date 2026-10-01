@@ -7,8 +7,7 @@ import {
 } from '@nexus/shared';
 
 export type TimeResolution =
-  | { ok: true; resolved: ResolvedTimeRequest; note?: string }
-  | { ok: false; message: string };
+  { ok: true; resolved: ResolvedTimeRequest; note?: string } | { ok: false; message: string };
 
 /**
  * Converte a escolha do usuário em um instante absoluto:
@@ -23,7 +22,8 @@ export function resolveTimeSelection(
   deviceZone: string,
 ): TimeResolution {
   if (selection.mode === 'now') return { ok: true, resolved: { mode: 'now' } };
-  if (!selection.date || !selection.time) return { ok: false, message: 'Informe a data e o horário.' };
+  if (!selection.date || !selection.time)
+    return { ok: false, message: 'Informe a data e o horário.' };
 
   const place = selection.mode === 'depart_at' ? origin : destination;
   const role = selection.mode === 'depart_at' ? 'da origem' : 'do destino';
@@ -34,7 +34,10 @@ export function resolveTimeSelection(
     note = `Fuso ${role} obtido do seu dispositivo (${deviceZone}).`;
   }
   if (!zone) {
-    return { ok: false, message: `Não foi possível determinar o fuso horário ${role}. Tente novamente ou use "Sair agora".` };
+    return {
+      ok: false,
+      message: `Não foi possível determinar o fuso horário ${role}. Tente novamente ou use "Sair agora".`,
+    };
   }
 
   const r = localDateTimeToInstant(selection.date, selection.time, zone);
@@ -63,5 +66,8 @@ export function defaultDateTime(now: Date, zone: string): { date: string; time: 
   }).formatToParts(new Date(now.getTime() + 15 * 60_000));
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '00';
   const minute = Math.floor(Number(get('minute')) / 15) * 15;
-  return { date: `${get('year')}-${get('month')}-${get('day')}`, time: `${get('hour')}:${String(minute).padStart(2, '0')}` };
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    time: `${get('hour')}:${String(minute).padStart(2, '0')}`,
+  };
 }

@@ -30,7 +30,12 @@ const PROVIDER_ID = 'hamburg_tld';
  * Pré-filtro: limites aproximados do estado de Hamburgo (continente). Só serve para não
  * consultar a fonte em rotas de outras cidades; a cobertura real é a resposta da própria fonte.
  */
-export const HAMBURG_PREFILTER_BOUNDS: Bounds = { north: 53.75, south: 53.39, west: 9.72, east: 10.33 };
+export const HAMBURG_PREFILTER_BOUNDS: Bounds = {
+  north: 53.75,
+  south: 53.39,
+  west: 9.72,
+  east: 10.33,
+};
 
 interface RawThing {
   '@iot.id': number;
@@ -87,8 +92,13 @@ export class HamburgTldProvider implements TrafficSignalProvider {
     return boundsIntersect(route.bounds, HAMBURG_PREFILTER_BOUNDS);
   }
 
-  async findAlongRoute(route: RouteGeometry, signal?: AbortSignal): Promise<TrafficSignalFeature[]> {
-    const polygons = corridorPolygons(route.path).filter((b) => boundsIntersect(b, HAMBURG_PREFILTER_BOUNDS));
+  async findAlongRoute(
+    route: RouteGeometry,
+    signal?: AbortSignal,
+  ): Promise<TrafficSignalFeature[]> {
+    const polygons = corridorPolygons(route.path).filter((b) =>
+      boundsIntersect(b, HAMBURG_PREFILTER_BOUNDS),
+    );
     const things: RawThing[] = [];
     for (let i = 0; i < polygons.length; i += POLYGONS_PER_REQUEST) {
       things.push(...(await this.queryThings(polygons.slice(i, i + POLYGONS_PER_REQUEST), signal)));
@@ -140,8 +150,19 @@ export class HamburgTldProvider implements TrafficSignalProvider {
         location: matches[0]!.stop,
         label: `Semáforo LSA ${lightId} — Hamburgo`,
         distanceAlongRouteMeters: Math.round(matches[0]!.stopAlongMeters),
-        sources: [{ provider: HAMBURG_TLD_NAME, attribution: HAMBURG_TLD_ATTRIBUTION, reference: `trafficLightsID=${lightId}` }],
-        telemetry: { status: 'live', provider: HAMBURG_TLD_NAME, approaches, supportsCountdown: false },
+        sources: [
+          {
+            provider: HAMBURG_TLD_NAME,
+            attribution: HAMBURG_TLD_ATTRIBUTION,
+            reference: `trafficLightsID=${lightId}`,
+          },
+        ],
+        telemetry: {
+          status: 'live',
+          provider: HAMBURG_TLD_NAME,
+          approaches,
+          supportsCountdown: false,
+        },
       });
     }
     for (const [lightId, stop] of nearbyUnmatched) {
@@ -152,7 +173,13 @@ export class HamburgTldProvider implements TrafficSignalProvider {
         location: stop,
         label: `Semáforo LSA ${lightId} — Hamburgo`,
         distanceAlongRouteMeters: p ? Math.round(p.distanceAlong) : undefined,
-        sources: [{ provider: HAMBURG_TLD_NAME, attribution: HAMBURG_TLD_ATTRIBUTION, reference: `trafficLightsID=${lightId}` }],
+        sources: [
+          {
+            provider: HAMBURG_TLD_NAME,
+            attribution: HAMBURG_TLD_ATTRIBUTION,
+            reference: `trafficLightsID=${lightId}`,
+          },
+        ],
         telemetry: {
           status: 'direction_unknown',
           provider: HAMBURG_TLD_NAME,
@@ -161,7 +188,9 @@ export class HamburgTldProvider implements TrafficSignalProvider {
         },
       });
     }
-    return features.sort((a, b) => (a.distanceAlongRouteMeters ?? 0) - (b.distanceAlongRouteMeters ?? 0));
+    return features.sort(
+      (a, b) => (a.distanceAlongRouteMeters ?? 0) - (b.distanceAlongRouteMeters ?? 0),
+    );
   }
 
   async getStates(streamIds: string[], signal?: AbortSignal): Promise<SignalStateUpdate[]> {
@@ -174,15 +203,18 @@ export class HamburgTldProvider implements TrafficSignalProvider {
       const qs = new URLSearchParams({
         $filter: filter,
         $select: 'id',
-        $expand: 'Observations($orderby=phenomenonTime desc;$top=1;$select=phenomenonTime,resultTime,result)',
+        $expand:
+          'Observations($orderby=phenomenonTime desc;$top=1;$select=phenomenonTime,resultTime,result)',
         $top: String(chunk.length),
       });
-      const res = await this.get<RawCollection<{ '@iot.id': number; Observations?: TldObservation[] }>>(
-        `${this.opts.baseUrl}/Datastreams?${qs.toString()}`,
-        signal,
-      );
+      const res = await this.get<
+        RawCollection<{ '@iot.id': number; Observations?: TldObservation[] }>
+      >(`${this.opts.baseUrl}/Datastreams?${qs.toString()}`, signal);
       for (const ds of res.value ?? []) {
-        out.push({ streamId: `${PROVIDER_ID}:${ds['@iot.id']}`, ...this.stateFromObservation(ds.Observations?.[0], nowMs) });
+        out.push({
+          streamId: `${PROVIDER_ID}:${ds['@iot.id']}`,
+          ...this.stateFromObservation(ds.Observations?.[0], nowMs),
+        });
       }
     }
     return out;
@@ -196,7 +228,10 @@ export class HamburgTldProvider implements TrafficSignalProvider {
       for (const id of ids) {
         unsubs.push(
           bridge.subscribe(id, (dsId, obs) =>
-            onUpdate({ streamId: `${PROVIDER_ID}:${dsId}`, ...this.stateFromObservation(obs, this.now().getTime()) }),
+            onUpdate({
+              streamId: `${PROVIDER_ID}:${dsId}`,
+              ...this.stateFromObservation(obs, this.now().getTime()),
+            }),
           ),
         );
       }
@@ -225,16 +260,23 @@ export class HamburgTldProvider implements TrafficSignalProvider {
   private stateFromObservation(
     obs: TldObservation | undefined,
     nowMs: number,
-  ): Omit<SignalApproachState, 'streamId' | 'laneConnection' | 'signalGroup' | 'laneType' | 'travelDirection'> {
+  ): Omit<
+    SignalApproachState,
+    'streamId' | 'laneConnection' | 'signalGroup' | 'laneType' | 'travelDirection'
+  > {
     if (!obs || obs.result === undefined) return { phase: null, stale: false };
     const phase = phaseFromTldCode(obs.result);
     const since = obs.phenomenonTime ? Date.parse(obs.phenomenonTime) : NaN;
-    const stale = Number.isFinite(since) ? nowMs - since > this.opts.staleAfterSeconds * 1000 : true;
+    const stale = Number.isFinite(since)
+      ? nowMs - since > this.opts.staleAfterSeconds * 1000
+      : true;
     return { phase, phaseSince: obs.phenomenonTime, receivedAt: obs.resultTime, stale };
   }
 
   private async queryThings(polygons: Bounds[], signal?: AbortSignal): Promise<RawThing[]> {
-    const spatial = polygons.map((b) => `st_intersects(Locations/location,geography'${toWktPolygon(b)}')`).join(' or ');
+    const spatial = polygons
+      .map((b) => `st_intersects(Locations/location,geography'${toWktPolygon(b)}')`)
+      .join(' or ');
     const qs = new URLSearchParams({
       $filter: `substringof('KFZ',properties/laneType) and (${spatial})`,
       $select: 'id,name,properties',
@@ -257,10 +299,14 @@ export class HamburgTldProvider implements TrafficSignalProvider {
       return await fetchJson<T>(this.fetchFn, url, { signal, timeoutMs: 20_000 }, HAMBURG_TLD_NAME);
     } catch (err) {
       if (err instanceof AppError || signal?.aborted) throw err;
-      throw new AppError('UPSTREAM', 'Telemetria de semáforos de Hamburgo temporariamente indisponível.', {
-        provider: HAMBURG_TLD_NAME,
-        cause: err,
-      });
+      throw new AppError(
+        'UPSTREAM',
+        'Telemetria de semáforos de Hamburgo temporariamente indisponível.',
+        {
+          provider: HAMBURG_TLD_NAME,
+          cause: err,
+        },
+      );
     }
   }
 }
@@ -273,8 +319,11 @@ function localId(streamId: string): number | null {
 export function toLaneConnection(t: RawThing): LaneConnection | null {
   const geom = t.Locations?.[0]?.location?.geometry;
   if (geom?.type !== 'MultiLineString' || !geom.coordinates) return null;
-  const lines = geom.coordinates.map((line) => line.map(([lng, lat]) => ({ lat: lat!, lng: lng! })));
-  const ds = t.Datastreams?.find((d) => d.properties?.layerName === 'primary_signal') ?? t.Datastreams?.[0];
+  const lines = geom.coordinates.map((line) =>
+    line.map(([lng, lat]) => ({ lat: lat!, lng: lng! })),
+  );
+  const ds =
+    t.Datastreams?.find((d) => d.properties?.layerName === 'primary_signal') ?? t.Datastreams?.[0];
   return {
     thingId: t['@iot.id'],
     name: t.name ?? String(t['@iot.id']),
@@ -296,7 +345,10 @@ export function corridorPolygons(path: LatLng[]): Bounds[] {
     const p = path[i]!;
     if (chunk.length > 0) {
       const prev = chunk[chunk.length - 1]!;
-      acc += Math.hypot((p.lat - prev.lat) * 111_320, (p.lng - prev.lng) * 111_320 * Math.cos((p.lat * Math.PI) / 180));
+      acc += Math.hypot(
+        (p.lat - prev.lat) * 111_320,
+        (p.lng - prev.lng) * 111_320 * Math.cos((p.lat * Math.PI) / 180),
+      );
     }
     chunk.push(p);
     if (acc >= CHUNK_METERS) {
@@ -305,7 +357,8 @@ export function corridorPolygons(path: LatLng[]): Bounds[] {
       acc = 0;
     }
   }
-  if (chunk.length > 1 || out.length === 0) out.push(expandBounds(boundsOf(chunk)!, CORRIDOR_MARGIN_M));
+  if (chunk.length > 1 || out.length === 0)
+    out.push(expandBounds(boundsOf(chunk)!, CORRIDOR_MARGIN_M));
   return out;
 }
 
@@ -313,4 +366,3 @@ function toWktPolygon(b: Bounds): string {
   const f = (n: number) => n.toFixed(6);
   return `POLYGON((${f(b.west)} ${f(b.south)},${f(b.east)} ${f(b.south)},${f(b.east)} ${f(b.north)},${f(b.west)} ${f(b.north)},${f(b.west)} ${f(b.south)}))`;
 }
-

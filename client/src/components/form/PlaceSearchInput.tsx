@@ -22,11 +22,24 @@ const DEBOUNCE_MS = 300;
  * Combobox ARIA (WAI-ARIA 1.2) com autocomplete da Places API (New) via servidor.
  * Só aceita um local escolhido da lista (Place ID → Place Details), nunca texto solto.
  */
-export function PlaceSearchInput({ label, badge, text, place, bias, onText, onPlace, disabled }: Props) {
+export function PlaceSearchInput({
+  label,
+  badge,
+  text,
+  place,
+  bias,
+  onText,
+  onPlace,
+  disabled,
+}: Props) {
   const id = useId();
   const listId = `${id}-list`;
   const [open, setOpen] = useState(false);
-  const [result, setResult] = useState<{ query: string; suggestions: PlaceSuggestion[]; error: string | null } | null>(null);
+  const [result, setResult] = useState<{
+    query: string;
+    suggestions: PlaceSuggestion[];
+    error: string | null;
+  } | null>(null);
   const [active, setActive] = useState(-1);
   const [resolving, setResolving] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
@@ -92,7 +105,13 @@ export function PlaceSearchInput({ label, badge, text, place, bias, onText, onPl
     }
   }
 
-  const showEmpty = open && !loading && !place && debounced.trim().length >= MIN_CHARS && suggestions.length === 0 && !error;
+  const showEmpty =
+    open &&
+    !loading &&
+    !place &&
+    debounced.trim().length >= MIN_CHARS &&
+    suggestions.length === 0 &&
+    !error;
 
   return (
     <div className={`place-field ${place ? 'place-field--ok' : ''}`}>
@@ -127,7 +146,9 @@ export function PlaceSearchInput({ label, badge, text, place, bias, onText, onPl
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           onKeyDown={onKeyDown}
         />
-        {(loading || resolving) && <Spinner label={resolving ? 'Carregando detalhes do local' : 'Buscando sugestões'} />}
+        {(loading || resolving) && (
+          <Spinner label={resolving ? 'Carregando detalhes do local' : 'Buscando sugestões'} />
+        )}
       </div>
       <p id={`${id}-hint`} className="place-field__hint" aria-live="polite">
         {error ? (
@@ -141,7 +162,12 @@ export function PlaceSearchInput({ label, badge, text, place, bias, onText, onPl
         ) : null}
       </p>
       {open && suggestions.length > 0 && (
-        <ul id={listId} role="listbox" className="suggestions" aria-label={`Sugestões para ${label.toLowerCase()}`}>
+        <ul
+          id={listId}
+          role="listbox"
+          className="suggestions"
+          aria-label={`Sugestões para ${label.toLowerCase()}`}
+        >
           {suggestions.map((s, i) => (
             <li
               key={s.placeId}

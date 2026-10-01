@@ -3,8 +3,14 @@ import type { Env } from './config/env';
 import type { FetchFn } from './lib/http';
 import { AirportDirectory } from './providers/airports/AirportDirectory';
 import { AeroApiFlightProvider } from './providers/flights/AeroApiFlightProvider';
-import { UnconfiguredFlightProvider, type FlightProvider } from './providers/flights/FlightProvider';
-import { GoogleGeocodingClient, GoogleTimeZoneClient } from './providers/google/GoogleLegacyClients';
+import {
+  UnconfiguredFlightProvider,
+  type FlightProvider,
+} from './providers/flights/FlightProvider';
+import {
+  GoogleGeocodingClient,
+  GoogleTimeZoneClient,
+} from './providers/google/GoogleLegacyClients';
 import { GoogleMapsPlatform } from './providers/google/GoogleMapsPlatform';
 import { GooglePlacesClient } from './providers/google/GooglePlacesClient';
 import { GoogleRoutesClient } from './providers/google/GoogleRoutesClient';
@@ -12,7 +18,10 @@ import { DemoTrafficSignalProvider } from './providers/signals/demo/DemoTrafficS
 import { HamburgMqttBridge } from './providers/signals/hamburg/HamburgMqttBridge';
 import { HamburgTldProvider } from './providers/signals/hamburg/HamburgTldProvider';
 import { OsmTrafficSignalLocator } from './providers/signals/OsmTrafficSignalLocator';
-import type { SignalLocationSource, TrafficSignalProvider } from './providers/signals/TrafficSignalProvider';
+import type {
+  SignalLocationSource,
+  TrafficSignalProvider,
+} from './providers/signals/TrafficSignalProvider';
 import { FlightService } from './services/FlightService';
 import { PlacesService } from './services/PlacesService';
 import { RouteService } from './services/RouteService';
@@ -59,7 +68,11 @@ export function createServices(env: Env, fetchFn: FetchFn = fetch): Services {
         fetchFn,
       })
     : new UnconfiguredFlightProvider();
-  const airports = new AirportDirectory({ dataUrl: env.AIRPORTS_DATA_URL, cacheDir: env.AIRPORTS_CACHE_DIR, fetchFn });
+  const airports = new AirportDirectory({
+    dataUrl: env.AIRPORTS_DATA_URL,
+    cacheDir: env.AIRPORTS_CACHE_DIR,
+    fetchFn,
+  });
   const flights = new FlightService(flightProvider, airports, routes, timeZones, {
     minDistanceKm: env.FLIGHT_MIN_DISTANCE_KM,
     airportSearchRadiusKm: env.FLIGHT_AIRPORT_SEARCH_RADIUS_KM,

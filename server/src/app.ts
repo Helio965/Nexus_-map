@@ -18,7 +18,11 @@ export interface AppOptions {
   rateLimit?: { capacity: number; refillPerSecond: number } | null;
 }
 
-export function createApp(services: Services, env: Pick<Env, 'CORS_ORIGIN' | 'NODE_ENV'>, opts: AppOptions = {}) {
+export function createApp(
+  services: Services,
+  env: Pick<Env, 'CORS_ORIGIN' | 'NODE_ENV'>,
+  opts: AppOptions = {},
+) {
   const app = express();
   app.disable('x-powered-by');
 
@@ -28,10 +32,35 @@ export function createApp(services: Services, env: Pick<Env, 'CORS_ORIGIN' | 'NO
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://*.googleapis.com', 'https://*.gstatic.com', '*.google.com', 'https://*.ggpht.com', '*.googleusercontent.com', 'blob:'],
-          'img-src': ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com', '*.google.com', '*.googleusercontent.com', 'data:', 'blob:'],
+          'script-src': [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            'https://*.googleapis.com',
+            'https://*.gstatic.com',
+            '*.google.com',
+            'https://*.ggpht.com',
+            '*.googleusercontent.com',
+            'blob:',
+          ],
+          'img-src': [
+            "'self'",
+            'https://*.googleapis.com',
+            'https://*.gstatic.com',
+            '*.google.com',
+            '*.googleusercontent.com',
+            'data:',
+            'blob:',
+          ],
           'frame-src': ['*.google.com'],
-          'connect-src': ["'self'", 'https://*.googleapis.com', '*.google.com', 'https://*.gstatic.com', 'data:', 'blob:'],
+          'connect-src': [
+            "'self'",
+            'https://*.googleapis.com',
+            '*.google.com',
+            'https://*.gstatic.com',
+            'data:',
+            'blob:',
+          ],
           'font-src': ["'self'", 'https://fonts.gstatic.com'],
           'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           'worker-src': ['blob:'],
@@ -56,11 +85,16 @@ export function createApp(services: Services, env: Pick<Env, 'CORS_ORIGIN' | 'NO
   app.use(express.json({ limit: '1mb' }));
 
   if (opts.rateLimit !== null) {
-    const limiter = new TokenBucketLimiter(opts.rateLimit?.capacity ?? 120, opts.rateLimit?.refillPerSecond ?? 2);
+    const limiter = new TokenBucketLimiter(
+      opts.rateLimit?.capacity ?? 120,
+      opts.rateLimit?.refillPerSecond ?? 2,
+    );
     app.use('/api', (req, res, next) => {
       if (req.path === '/signals/stream') return next();
       if (!limiter.take(req.ip ?? 'unknown')) {
-        const body: ApiErrorBody = { error: { code: 'RATE_LIMITED', message: 'Muitas requisições. Aguarde alguns segundos.' } };
+        const body: ApiErrorBody = {
+          error: { code: 'RATE_LIMITED', message: 'Muitas requisições. Aguarde alguns segundos.' },
+        };
         return void res.status(429).json(body);
       }
       next();
@@ -69,7 +103,9 @@ export function createApp(services: Services, env: Pick<Env, 'CORS_ORIGIN' | 'NO
 
   app.use('/api', apiRouter(services, opts.now));
   app.use('/api', (_req, res) => {
-    const body: ApiErrorBody = { error: { code: 'NOT_FOUND', message: 'Rota da API não encontrada.' } };
+    const body: ApiErrorBody = {
+      error: { code: 'NOT_FOUND', message: 'Rota da API não encontrada.' },
+    };
     res.status(404).json(body);
   });
 
@@ -93,7 +129,10 @@ export function createApp(services: Services, env: Pick<Env, 'CORS_ORIGIN' | 'NO
       body = {
         error: {
           code: 'VALIDATION',
-          message: first?.message && !first.message.startsWith('Invalid') ? first.message : 'Requisição inválida.',
+          message:
+            first?.message && !first.message.startsWith('Invalid')
+              ? first.message
+              : 'Requisição inválida.',
           details: err.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
         },
       };

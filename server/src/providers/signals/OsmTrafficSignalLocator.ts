@@ -14,7 +14,13 @@ export const OSM_ATTRIBUTION = '© Colaboradores do OpenStreetMap (ODbL)';
 const OVERPASS_NAME = 'OpenStreetMap (Overpass API)';
 
 interface OverpassResponse {
-  elements?: Array<{ type: string; id: number; lat?: number; lon?: number; tags?: Record<string, string> }>;
+  elements?: Array<{
+    type: string;
+    id: number;
+    lat?: number;
+    lon?: number;
+    tags?: Record<string, string>;
+  }>;
   remark?: string;
 }
 
@@ -38,7 +44,10 @@ export class OsmTrafficSignalLocator implements SignalLocationSource {
     private readonly fetchFn: FetchFn = fetch,
   ) {}
 
-  async findAlongRoute(route: RouteGeometry, signal?: AbortSignal): Promise<TrafficSignalFeature[]> {
+  async findAlongRoute(
+    route: RouteGeometry,
+    signal?: AbortSignal,
+  ): Promise<TrafficSignalFeature[]> {
     const line = simplifyForQuery(route.path);
     const key = cacheKey(line.map((p) => [p.lat.toFixed(5), p.lng.toFixed(5)]));
     const cached = this.cache.get(key);
@@ -88,7 +97,10 @@ export class OsmTrafficSignalLocator implements SignalLocationSource {
   }
 }
 
-export function mapOverpassSignals(res: OverpassResponse, route: RouteGeometry): TrafficSignalFeature[] {
+export function mapOverpassSignals(
+  res: OverpassResponse,
+  route: RouteGeometry,
+): TrafficSignalFeature[] {
   const out: TrafficSignalFeature[] = [];
   for (const el of res.elements ?? []) {
     if (el.type !== 'node' || el.lat === undefined || el.lon === undefined) continue;
@@ -101,7 +113,13 @@ export function mapOverpassSignals(res: OverpassResponse, route: RouteGeometry):
       location,
       label: 'Semáforo (OpenStreetMap)',
       distanceAlongRouteMeters: Math.round(proj.distanceAlong),
-      sources: [{ provider: OVERPASS_NAME, attribution: OSM_ATTRIBUTION, reference: `https://www.openstreetmap.org/node/${el.id}` }],
+      sources: [
+        {
+          provider: OVERPASS_NAME,
+          attribution: OSM_ATTRIBUTION,
+          reference: `https://www.openstreetmap.org/node/${el.id}`,
+        },
+      ],
       telemetry: { status: 'none', reason: SIGNAL_NO_TELEMETRY_MESSAGE },
     });
   }

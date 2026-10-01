@@ -30,7 +30,10 @@ export class GoogleTimeZoneClient {
     return this.platform.callLegacy<RawTimeZoneResponse>(
       TIME_ZONE_API_NAME,
       'https://maps.googleapis.com/maps/api/timezone/json',
-      { location: `${location.lat},${location.lng}`, timestamp: String(Math.floor(at.getTime() / 1000)) },
+      {
+        location: `${location.lat},${location.lng}`,
+        timestamp: String(Math.floor(at.getTime() / 1000)),
+      },
       signal,
     );
   }

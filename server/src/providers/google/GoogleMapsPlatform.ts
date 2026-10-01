@@ -34,7 +34,13 @@ export class GoogleMapsPlatform {
   async callWithFieldMask<T>(
     apiName: string,
     url: string,
-    opts: { method: 'GET' | 'POST'; body?: unknown; fieldMask: string; signal?: AbortSignal; timeoutMs?: number },
+    opts: {
+      method: 'GET' | 'POST';
+      body?: unknown;
+      fieldMask: string;
+      signal?: AbortSignal;
+      timeoutMs?: number;
+    },
   ): Promise<T> {
     const key = this.requireKey(apiName);
     try {
@@ -66,7 +72,12 @@ export class GoogleMapsPlatform {
     const qs = new URLSearchParams({ ...params, key });
     let body: T;
     try {
-      body = await fetchJson<T>(this.fetchFn, `${baseUrl}?${qs.toString()}`, { signal, timeoutMs: 10_000 }, apiName);
+      body = await fetchJson<T>(
+        this.fetchFn,
+        `${baseUrl}?${qs.toString()}`,
+        { signal, timeoutMs: 10_000 },
+        apiName,
+      );
     } catch (err) {
       throw mapGoogleError(apiName, err);
     }
@@ -74,7 +85,10 @@ export class GoogleMapsPlatform {
     if (status === 'OK' || status === 'ZERO_RESULTS') return body;
     const detail = body.error_message ?? body.errorMessage;
     if (status === 'OVER_QUERY_LIMIT' || status === 'OVER_DAILY_LIMIT') {
-      throw new AppError('QUOTA', `Cota da ${apiName} excedida.`, { provider: apiName, details: detail });
+      throw new AppError('QUOTA', `Cota da ${apiName} excedida.`, {
+        provider: apiName,
+        details: detail,
+      });
     }
     if (status === 'REQUEST_DENIED') {
       throw new AppError(
@@ -96,7 +110,10 @@ export function mapGoogleError(apiName: string, err: unknown): unknown {
   const message = body.error?.message;
   const rpc = body.error?.status;
   if (err.status === 429 || rpc === 'RESOURCE_EXHAUSTED') {
-    return new AppError('QUOTA', `Cota da ${apiName} excedida. Tente novamente mais tarde.`, { provider: apiName, details: message });
+    return new AppError('QUOTA', `Cota da ${apiName} excedida. Tente novamente mais tarde.`, {
+      provider: apiName,
+      details: message,
+    });
   }
   if (err.status === 403 || rpc === 'PERMISSION_DENIED') {
     return new AppError(
@@ -106,16 +123,29 @@ export function mapGoogleError(apiName: string, err: unknown): unknown {
     );
   }
   if (err.status === 401 || rpc === 'UNAUTHENTICATED') {
-    return new AppError('UPSTREAM', `Chave do servidor inválida para ${apiName}.`, { provider: apiName, details: message });
-  }
-  if (err.status === 404 || rpc === 'NOT_FOUND') {
-    return new AppError('NOT_FOUND', `${apiName}: recurso não encontrado.`, { provider: apiName, details: message });
-  }
-  if (err.status >= 400 && err.status < 500) {
-    return new AppError('UPSTREAM', `${apiName} recusou a requisição${message ? `: ${message}` : '.'}`, {
+    return new AppError('UPSTREAM', `Chave do servidor inválida para ${apiName}.`, {
       provider: apiName,
       details: message,
     });
   }
-  return new AppError('UPSTREAM', `${apiName} está temporariamente indisponível.`, { provider: apiName, details: message });
+  if (err.status === 404 || rpc === 'NOT_FOUND') {
+    return new AppError('NOT_FOUND', `${apiName}: recurso não encontrado.`, {
+      provider: apiName,
+      details: message,
+    });
+  }
+  if (err.status >= 400 && err.status < 500) {
+    return new AppError(
+      'UPSTREAM',
+      `${apiName} recusou a requisição${message ? `: ${message}` : '.'}`,
+      {
+        provider: apiName,
+        details: message,
+      },
+    );
+  }
+  return new AppError('UPSTREAM', `${apiName} está temporariamente indisponível.`, {
+    provider: apiName,
+    details: message,
+  });
 }

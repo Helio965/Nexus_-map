@@ -3,7 +3,11 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { SNAP_FRACTION, type SheetSnap } from './sheetSnaps';
 
 const ORDER: SheetSnap[] = ['peek', 'half', 'full'];
-const LABEL: Record<SheetSnap, string> = { peek: 'recolhido', half: 'meia altura', full: 'expandido' };
+const LABEL: Record<SheetSnap, string> = {
+  peek: 'recolhido',
+  half: 'meia altura',
+  full: 'expandido',
+};
 
 /**
  * Painel inferior para celular: arrastável (ponteiro/toque) e operável por teclado
@@ -45,7 +49,11 @@ export function BottomSheet({
     const moved = dragY !== null && Math.abs(dragY - start.current.height) > 8;
     if (moved && dragY !== null) {
       const frac = dragY / vh;
-      const nearest = ORDER.reduce((best, s) => (Math.abs(SNAP_FRACTION[s] - frac) < Math.abs(SNAP_FRACTION[best] - frac) ? s : best), snap);
+      const nearest = ORDER.reduce(
+        (best, s) =>
+          Math.abs(SNAP_FRACTION[s] - frac) < Math.abs(SNAP_FRACTION[best] - frac) ? s : best,
+        snap,
+      );
       onSnap(nearest);
     } else {
       onSnap(ORDER[(ORDER.indexOf(snap) + 1) % ORDER.length]!);
@@ -55,7 +63,12 @@ export function BottomSheet({
   }
 
   return (
-    <div ref={sheetRef} className={`sheet ${dragY !== null ? 'is-dragging' : ''}`} style={{ height }} data-snap={snap}>
+    <div
+      ref={sheetRef}
+      className={`sheet ${dragY !== null ? 'is-dragging' : ''}`}
+      style={{ height }}
+      data-snap={snap}
+    >
       <button
         type="button"
         className="sheet__handle"

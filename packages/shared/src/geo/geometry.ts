@@ -9,7 +9,8 @@ export function haversineMeters(a: LatLng, b: LatLng): number {
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
   const s =
-    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(s)));
 }
 
@@ -74,7 +75,12 @@ export function projectOntoPath(
 ): PathProjection | null {
   if (path.length === 0) return null;
   if (path.length === 1) {
-    return { distanceAlong: 0, lateral: haversineMeters(point, path[0]!), segmentIndex: 0, segmentBearing: 0 };
+    return {
+      distanceAlong: 0,
+      lateral: haversineMeters(point, path[0]!),
+      segmentIndex: 0,
+      segmentBearing: 0,
+    };
   }
   let best: PathProjection | null = null;
   for (let i = 0; i < path.length - 1; i++) {

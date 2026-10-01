@@ -15,9 +15,12 @@ const server = app.listen(env.PORT, () => {
       `Voos: ${c.flights.configured ? c.flights.provider : 'NÃO configurado'} | ` +
       `Semáforos: OSM=${c.signals.osm} Hamburgo=${c.signals.hamburgTld} DEMO=${c.signals.demoMode}`,
   );
-  if (c.signals.demoMode) console.warn('[nexus] ATENÇÃO: modo demonstração de semáforos ATIVO (dados simulados).');
+  if (c.signals.demoMode)
+    console.warn('[nexus] ATENÇÃO: modo demonstração de semáforos ATIVO (dados simulados).');
   if (c.flights.configured) {
-    services.airports.load().catch((err) => console.warn('[nexus] base de aeroportos indisponível:', err.message));
+    services.airports
+      .load()
+      .catch((err) => console.warn('[nexus] base de aeroportos indisponível:', err.message));
   }
 });
 

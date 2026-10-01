@@ -26,7 +26,9 @@ type Fetched = { key: string; layer: Extract<SignalLayerStatus, { status: 'error
 export function useSignalLayer(polyline: string | null, enabled: boolean) {
   const [fetched, setFetched] = useState<Fetched | null>(null);
   const [states, setStates] = useState<Record<string, SignalStateUpdate>>({});
-  const [streamState, setStreamState] = useState<{ key: string; status: StreamStatus } | null>(null);
+  const [streamState, setStreamState] = useState<{ key: string; status: StreamStatus } | null>(
+    null,
+  );
   const [clockOffsetMs, setClockOffsetMs] = useState(0);
 
   useEffect(() => {
@@ -75,7 +77,9 @@ export function useSignalLayer(polyline: string | null, enabled: boolean) {
   const streamKey = useMemo(() => {
     if (layer.status !== 'ready') return '';
     return layer.data.features
-      .flatMap((f) => (f.telemetry.status === 'live' ? f.telemetry.approaches.map((a) => a.streamId) : []))
+      .flatMap((f) =>
+        f.telemetry.status === 'live' ? f.telemetry.approaches.map((a) => a.streamId) : [],
+      )
       .join(',');
   }, [layer]);
 
@@ -100,7 +104,11 @@ export function useSignalLayer(polyline: string | null, enabled: boolean) {
       const u = JSON.parse((ev as MessageEvent).data) as SignalStateUpdate;
       setStates((prev) => ({ ...prev, [u.streamId]: u }));
     });
-    es.onerror = () => setStreamState({ key: streamKey, status: es.readyState === EventSource.CLOSED ? 'idle' : 'reconnecting' });
+    es.onerror = () =>
+      setStreamState({
+        key: streamKey,
+        status: es.readyState === EventSource.CLOSED ? 'idle' : 'reconnecting',
+      });
 
     // Ressincronização periódica do estado completo.
     const controller = new AbortController();
@@ -125,15 +133,28 @@ export function useSignalLayer(polyline: string | null, enabled: boolean) {
     };
   }, [streamKey]);
 
-  const stream: StreamStatus = !streamKey ? 'idle' : streamState?.key === streamKey ? streamState.status : 'connecting';
+  const stream: StreamStatus = !streamKey
+    ? 'idle'
+    : streamState?.key === streamKey
+      ? streamState.status
+      : 'connecting';
 
   return { layer, states, stream, clockOffsetMs };
 }
 
 /** MODO DEMONSTRAÇÃO (dados simulados) — completamente separado da camada real. */
 export function useDemoSignals(polyline: string | null, enabled: boolean) {
-  const [result, setResult] = useState<{ key: string; data: DemoSignalResponse | null; error: string | null; offset: number } | null>(null);
-  const latest = useRef<{ data: DemoSignalResponse | null; offset: number; loading: boolean }>({ data: null, offset: 0, loading: false });
+  const [result, setResult] = useState<{
+    key: string;
+    data: DemoSignalResponse | null;
+    error: string | null;
+    offset: number;
+  } | null>(null);
+  const latest = useRef<{ data: DemoSignalResponse | null; offset: number; loading: boolean }>({
+    data: null,
+    offset: 0,
+    loading: false,
+  });
 
   useEffect(() => {
     if (!enabled || !polyline) return;
@@ -151,7 +172,8 @@ export function useDemoSignals(polyline: string | null, enabled: boolean) {
         })
         .catch((err: Error) => {
           latest.current.loading = false;
-          if (!isAbort(err)) setResult({ key: polyline, data: null, error: err.message, offset: 0 });
+          if (!isAbort(err))
+            setResult({ key: polyline, data: null, error: err.message, offset: 0 });
         });
     };
     load();
@@ -169,5 +191,9 @@ export function useDemoSignals(polyline: string | null, enabled: boolean) {
   }, [polyline, enabled]);
 
   const current = enabled && polyline && result?.key === polyline ? result : null;
-  return { data: current?.data ?? null, error: current?.error ?? null, clockOffsetMs: current?.offset ?? 0 };
+  return {
+    data: current?.data ?? null,
+    error: current?.error ?? null,
+    clockOffsetMs: current?.offset ?? 0,
+  };
 }

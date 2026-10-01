@@ -81,7 +81,9 @@ const MODE_PATHS: Record<TravelMode | 'compare', ReactNode> = {
       <circle cx="14.5" cy="13" r="0.6" />
     </>
   ),
-  flight: <path d="M21 15.5v-2l-8-4.5V4a1.5 1.5 0 0 0-3 0v5L2 13.5v2l8-2.5v4.5l-2.5 2V21l4-1 4 1v-1.5l-2.5-2V13z" />,
+  flight: (
+    <path d="M21 15.5v-2l-8-4.5V4a1.5 1.5 0 0 0-3 0v5L2 13.5v2l8-2.5v4.5l-2.5 2V21l4-1 4 1v-1.5l-2.5-2V13z" />
+  ),
 };
 
 export function ModeIcon({ mode, size = 20 }: { mode: TravelMode | 'compare'; size?: number }) {
@@ -103,7 +105,13 @@ export function ModeIcon({ mode, size = 20 }: { mode: TravelMode | 'compare'; si
   );
 }
 
-export function Icon({ name, size = 18 }: { name: 'swap' | 'locate' | 'layers' | 'traffic' | 'signal' | 'close' | 'chevron' | 'info'; size?: number }) {
+export function Icon({
+  name,
+  size = 18,
+}: {
+  name: 'swap' | 'locate' | 'layers' | 'traffic' | 'signal' | 'close' | 'chevron' | 'info';
+  size?: number;
+}) {
   const paths: Record<typeof name, ReactNode> = {
     swap: <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" />,
     locate: (
@@ -133,7 +141,17 @@ export function Icon({ name, size = 18 }: { name: 'swap' | 'locate' | 'layers' |
     ),
   };
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       {paths[name]}
     </svg>
   );
@@ -148,8 +166,20 @@ export function ManeuverGlyph({ maneuver }: { maneuver?: string }) {
   else if (m.includes('ROUNDABOUT')) glyph = '⟳';
   else if (m === 'DEPART') glyph = '●';
   else if (m.includes('FERRY')) glyph = '⛴';
-  else if (m.includes('LEFT')) rot = m.includes('SLIGHT') || m.includes('RAMP') || m.includes('FORK') ? -45 : m.includes('SHARP') ? -135 : -90;
-  else if (m.includes('RIGHT')) rot = m.includes('SLIGHT') || m.includes('RAMP') || m.includes('FORK') ? 45 : m.includes('SHARP') ? 135 : 90;
+  else if (m.includes('LEFT'))
+    rot =
+      m.includes('SLIGHT') || m.includes('RAMP') || m.includes('FORK')
+        ? -45
+        : m.includes('SHARP')
+          ? -135
+          : -90;
+  else if (m.includes('RIGHT'))
+    rot =
+      m.includes('SLIGHT') || m.includes('RAMP') || m.includes('FORK')
+        ? 45
+        : m.includes('SHARP')
+          ? 135
+          : 90;
   return (
     <span className="maneuver" aria-hidden="true" style={{ transform: `rotate(${rot}deg)` }}>
       {glyph}

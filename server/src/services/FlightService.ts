@@ -58,7 +58,12 @@ export class FlightService {
   }
 
   async flight(req: FlightRouteRequest, signal?: AbortSignal): Promise<ModeResult> {
-    const base = { mode: 'flight' as const, options: [], warnings: [], provider: this.provider.name };
+    const base = {
+      mode: 'flight' as const,
+      options: [],
+      warnings: [],
+      provider: this.provider.name,
+    };
     if (!this.provider.configured) {
       return {
         ...base,
@@ -92,11 +97,15 @@ export class FlightService {
       };
     }
     const destCodes = new Set(destNear.map((a) => a.iata));
-    if (originNear.every((a) => destCodes.has(a.iata)) && destNear.every((a) => originNear.some((o) => o.iata === a.iata))) {
+    if (
+      originNear.every((a) => destCodes.has(a.iata)) &&
+      destNear.every((a) => originNear.some((o) => o.iata === a.iata))
+    ) {
       return {
         ...base,
         status: 'unavailable',
-        message: 'Não há rota aérea adequada disponível: origem e destino são atendidos pelo(s) mesmo(s) aeroporto(s).',
+        message:
+          'Não há rota aérea adequada disponível: origem e destino são atendidos pelo(s) mesmo(s) aeroporto(s).',
       };
     }
 
@@ -148,7 +157,8 @@ export class FlightService {
         ...base,
         status: 'unavailable',
         meta,
-        message: 'Não há rota aérea adequada disponível: não há rota terrestre de carro até os aeroportos encontrados.',
+        message:
+          'Não há rota aérea adequada disponível: não há rota terrestre de carro até os aeroportos encontrados.',
       };
     }
 
@@ -156,7 +166,12 @@ export class FlightService {
     const pre = req.preDepartureMarginMinutes * 60;
     const post = req.postArrivalMarginMinutes * 60;
     const maxFuture = addSeconds(nowIso, Math.floor(this.provider.maxFutureMs / 1000));
-    const candidates: Array<{ flight: ScheduledFlight; from: AirportWithGround; to: AirportWithGround; score: number }> = [];
+    const candidates: Array<{
+      flight: ScheduledFlight;
+      from: AirportWithGround;
+      to: AirportWithGround;
+      score: number;
+    }> = [];
     let flightsFound = 0;
 
     for (const from of originAirports) {
@@ -165,10 +180,18 @@ export class FlightService {
         const window = this.searchWindow(time, nowIso, from, to, pre, post);
         if (!window) continue;
         if (diffSeconds(window.end, maxFuture) < 0) {
-          throw new AppError('VALIDATION', 'Horários de voos só podem ser consultados até 1 ano à frente.');
+          throw new AppError(
+            'VALIDATION',
+            'Horários de voos só podem ser consultados até 1 ano à frente.',
+          );
         }
         const flights = await this.provider.searchDirectFlights(
-          { originIata: from.iata, destinationIata: to.iata, departureWindowStart: window.start, departureWindowEnd: window.end },
+          {
+            originIata: from.iata,
+            destinationIata: to.iata,
+            departureWindowStart: window.start,
+            departureWindowEnd: window.end,
+          },
           signal,
         );
         apiCalls++;
@@ -213,13 +236,18 @@ export class FlightService {
       if (option) options.push(option);
     }
     if (options.length === 0) {
-      warnings.push('Os voos encontrados não deixam tempo suficiente para o trajeto terrestre até o aeroporto.');
+      warnings.push(
+        'Os voos encontrados não deixam tempo suficiente para o trajeto terrestre até o aeroporto.',
+      );
     }
 
     return {
       ...base,
       status: options.length > 0 ? 'available' : 'unavailable',
-      message: options.length > 0 ? undefined : 'Não encontramos voos compatíveis com o período escolhido.',
+      message:
+        options.length > 0
+          ? undefined
+          : 'Não encontramos voos compatíveis com o período escolhido.',
       options,
       warnings,
       meta,
@@ -259,18 +287,31 @@ export class FlightService {
   ): Promise<RouteOption | null> {
     const { flight, from, to } = c;
     let accessDeparture = addSeconds(flight.scheduledOut, -(pre + from.groundSeconds));
-    if (req.time.mode === 'depart_at' && req.time.instant) accessDeparture = maxIso(accessDeparture, req.time.instant);
+    if (req.time.mode === 'depart_at' && req.time.instant)
+      accessDeparture = maxIso(accessDeparture, req.time.instant);
     accessDeparture = maxIso(accessDeparture, nowIso);
 
     const fromEndpoint = airportEndpoint(from);
     const toEndpoint = airportEndpoint(to);
-    const access = await this.routes.driveLeg(req.origin, fromEndpoint, accessDeparture, `Até o aeroporto ${from.iata}`, signal);
+    const access = await this.routes.driveLeg(
+      req.origin,
+      fromEndpoint,
+      accessDeparture,
+      `Até o aeroporto ${from.iata}`,
+      signal,
+    );
     if (!access) return null;
     const actualPre = diffSeconds(access.arrival, flight.scheduledOut);
     if (actualPre < 0) return null; // chegaria ao aeroporto depois da partida
 
     const egressDeparture = addSeconds(flight.scheduledIn, post);
-    const egress = await this.routes.driveLeg(toEndpoint, req.destination, egressDeparture, `Do aeroporto ${to.iata} ao destino`, signal);
+    const egress = await this.routes.driveLeg(
+      toEndpoint,
+      req.destination,
+      egressDeparture,
+      `Do aeroporto ${to.iata} ao destino`,
+      signal,
+    );
     if (!egress) return null;
 
     const warnings: string[] = [];

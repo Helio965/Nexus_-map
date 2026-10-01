@@ -1,4 +1,9 @@
-import { compareModes, SIGNAL_NO_TELEMETRY_MESSAGE, type ModeResult, type SignalLayerResponse } from '@nexus/shared';
+import {
+  compareModes,
+  SIGNAL_NO_TELEMETRY_MESSAGE,
+  type ModeResult,
+  type SignalLayerResponse,
+} from '@nexus/shared';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ModeCards } from '../src/components/results/ModeCards';
@@ -6,7 +11,12 @@ import { ApproachLine, SignalsPanel } from '../src/components/signals/SignalsPan
 
 const NOW = new Date('2026-10-20T09:00:00Z');
 
-function available(mode: ModeResult['mode'], dep: string, arr: string, seconds: number): ModeResult {
+function available(
+  mode: ModeResult['mode'],
+  dep: string,
+  arr: string,
+  seconds: number,
+): ModeResult {
   return {
     mode,
     status: 'available',
@@ -34,13 +44,27 @@ describe('ModeCards', () => {
       {
         drive: available('drive', '2026-10-20T11:04:00Z', '2026-10-20T11:42:00Z', 2280),
         walk: available('walk', '2026-10-20T10:00:00Z', '2026-10-20T13:14:00Z', 11640),
-        flight: { mode: 'flight', status: 'unavailable', options: [], warnings: [], provider: 't', message: 'Não há rota aérea adequada disponível.' },
+        flight: {
+          mode: 'flight',
+          status: 'unavailable',
+          options: [],
+          warnings: [],
+          provider: 't',
+          message: 'Não há rota aérea adequada disponível.',
+        },
       },
       { mode: 'arrive_by', instant: '2026-10-20T12:00:00Z', zone: 'America/Sao_Paulo' },
       'America/Sao_Paulo',
       NOW,
     );
-    render(<ModeCards comparison={cmp} selectedMode={null} recommendedMode="drive" onSelect={() => undefined} />);
+    render(
+      <ModeCards
+        comparison={cmp}
+        selectedMode={null}
+        recommendedMode="drive"
+        onSelect={() => undefined}
+      />,
+    );
     const drive = screen.getByRole('button', { name: /Carro/ });
     expect(within(drive).getByText('38 min')).toBeInTheDocument();
     expect(within(drive).getByText(/Atende ao horário/)).toBeInTheDocument();
@@ -57,7 +81,9 @@ describe('Semáforos na interface', () => {
     const data: SignalLayerResponse = {
       status: 'ok',
       serverTime: '2026-10-20T09:00:00Z',
-      messages: ['Nenhuma fonte de telemetria de semáforos está disponível para esta rota. Os semáforos são exibidos sem estado.'],
+      messages: [
+        'Nenhuma fonte de telemetria de semáforos está disponível para esta rota. Os semáforos são exibidos sem estado.',
+      ],
       providers: [{ id: 'osm', name: 'OpenStreetMap (Overpass API)', status: 'ok' }],
       features: [
         {
@@ -69,9 +95,18 @@ describe('Semáforos na interface', () => {
         },
       ],
     };
-    render(<SignalsPanel layer={{ status: 'ready', data }} states={{}} stream="idle" clockOffsetMs={0} onFocus={() => undefined} />);
+    render(
+      <SignalsPanel
+        layer={{ status: 'ready', data }}
+        states={{}}
+        stream="idle"
+        clockOffsetMs={0}
+        onFocus={() => undefined}
+      />,
+    );
     expect(screen.getByText(SIGNAL_NO_TELEMETRY_MESSAGE)).toBeInTheDocument();
-    for (const t of ['VERMELHO', 'VERDE', 'AMARELO']) expect(screen.queryByText(new RegExp(t))).not.toBeInTheDocument();
+    for (const t of ['VERMELHO', 'VERDE', 'AMARELO'])
+      expect(screen.queryByText(new RegExp(t))).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Tempo restante informado pela fonte')).not.toBeInTheDocument();
   });
 
@@ -105,7 +140,14 @@ describe('Semáforos na interface', () => {
       <ul>
         <ApproachLine
           nowMs={nowMs}
-          approach={{ streamId: 'x:1', laneConnection: 'c', phase: 'green', phaseSince: '2026-10-20T08:59:50Z', nextChangeAt: '2026-10-20T09:00:18Z', stale: false }}
+          approach={{
+            streamId: 'x:1',
+            laneConnection: 'c',
+            phase: 'green',
+            phaseSince: '2026-10-20T08:59:50Z',
+            nextChangeAt: '2026-10-20T09:00:18Z',
+            stale: false,
+          }}
         />
       </ul>,
     );
@@ -117,7 +159,13 @@ describe('Semáforos na interface', () => {
       <ul>
         <ApproachLine
           nowMs={Date.parse('2026-10-20T09:10:00Z')}
-          approach={{ streamId: 'x:1', laneConnection: 'c', phase: 'green', phaseSince: '2026-10-20T09:00:00Z', stale: true }}
+          approach={{
+            streamId: 'x:1',
+            laneConnection: 'c',
+            phase: 'green',
+            phaseSince: '2026-10-20T09:00:00Z',
+            stale: true,
+          }}
         />
       </ul>,
     );

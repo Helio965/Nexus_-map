@@ -25,10 +25,12 @@ export async function runMode(
   } catch (err) {
     if (signal?.aborted) throw err;
     const base = { mode, options: [], warnings: [], provider };
-    if (err instanceof NoRouteError) return { ...base, status: 'unavailable', message: NO_ROUTE[mode] };
+    if (err instanceof NoRouteError)
+      return { ...base, status: 'unavailable', message: NO_ROUTE[mode] };
     if (err instanceof AppError) {
       if (err.code === 'VALIDATION') throw err;
-      if (err.code === 'NOT_CONFIGURED') return { ...base, status: 'not_configured', message: err.message };
+      if (err.code === 'NOT_CONFIGURED')
+        return { ...base, status: 'not_configured', message: err.message };
       return { ...base, status: 'error', message: err.message };
     }
     console.error(`[${mode}] erro inesperado:`, err);

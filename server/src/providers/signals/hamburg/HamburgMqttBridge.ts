@@ -104,7 +104,9 @@ export class HamburgMqttBridge {
       for (const l of this.listeners.get(id) ?? []) l(id, obs);
     });
     client.on('error', (err) => console.warn('[hamburg-tld mqtt]', err.message));
-    client.on('offline', () => console.warn('[hamburg-tld mqtt] offline; usando consulta periódica (REST) até reconectar'));
+    client.on('offline', () =>
+      console.warn('[hamburg-tld mqtt] offline; usando consulta periódica (REST) até reconectar'),
+    );
     this.client = client;
     return client;
   }

@@ -1,5 +1,20 @@
-import type { Bounds, DemoSignalFeature, LatLng, PlaceSummary, RouteOption, SignalStateUpdate, TrafficSignalFeature } from '@nexus/shared';
-import { APILoadingStatus, APIProvider, Map, useApiLoadingStatus, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import type {
+  Bounds,
+  DemoSignalFeature,
+  LatLng,
+  PlaceSummary,
+  RouteOption,
+  SignalStateUpdate,
+  TrafficSignalFeature,
+} from '@nexus/shared';
+import {
+  APILoadingStatus,
+  APIProvider,
+  Map,
+  useApiLoadingStatus,
+  useMap,
+  useMapsLibrary,
+} from '@vis.gl/react-google-maps';
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import { config } from '../../config';
 import { optionBounds } from '../../services/MapService';
@@ -52,8 +67,9 @@ export function MapView(props: MapViewProps) {
         <div className="map-unavailable">
           <p className="eyebrow">Mapa indisponível</p>
           <p>
-            Configure <code>VITE_GOOGLE_MAPS_BROWSER_KEY</code> (chave da Maps JavaScript API restrita ao seu domínio) para exibir o mapa. Nenhuma imagem
-            substituta é desenhada no lugar do mapa real.
+            Configure <code>VITE_GOOGLE_MAPS_BROWSER_KEY</code> (chave da Maps JavaScript API
+            restrita ao seu domínio) para exibir o mapa. Nenhuma imagem substituta é desenhada no
+            lugar do mapa real.
           </p>
         </div>
       </div>
@@ -75,17 +91,26 @@ function MapInner(p: MapViewProps) {
       {status === APILoadingStatus.AUTH_FAILURE && (
         <div className="map-overlay-notice">
           <Notice tone="error" title="Chave do mapa recusada">
-            A Maps JavaScript API recusou a chave do navegador. Verifique se a API está habilitada e se o domínio atual está nas restrições de referrer da chave.
+            A Maps JavaScript API recusou a chave do navegador. Verifique se a API está habilitada e
+            se o domínio atual está nas restrições de referrer da chave.
           </Notice>
         </div>
       )}
       {status === APILoadingStatus.FAILED && (
         <div className="map-overlay-notice">
-          <Notice tone="error">Não foi possível carregar a Maps JavaScript API. Verifique sua conexão.</Notice>
+          <Notice tone="error">
+            Não foi possível carregar a Maps JavaScript API. Verifique sua conexão.
+          </Notice>
         </div>
       )}
       {is3d ? (
-        <Suspense fallback={<div className="map-loading"><Spinner label="Carregando mapa 3D" /></div>}>
+        <Suspense
+          fallback={
+            <div className="map-loading">
+              <Spinner label="Carregando mapa 3D" />
+            </div>
+          }
+        >
           <Map3DView origin={p.origin} destination={p.destination} selected={p.selected} />
         </Suspense>
       ) : (
@@ -103,11 +128,25 @@ function MapInner(p: MapViewProps) {
           reuseMaps
         >
           <TrafficLayer enabled={p.trafficOn} />
-          <ViewportController origin={p.origin} destination={p.destination} selected={p.selected} focusPoint={p.focusPoint} padding={p.padding} />
+          <ViewportController
+            origin={p.origin}
+            destination={p.destination}
+            selected={p.selected}
+            focusPoint={p.focusPoint}
+            padding={p.padding}
+          />
           <RouteLayers options={p.options} selected={p.selected} onSelect={p.onSelectOption} />
           <PlaceMarkers origin={p.origin} destination={p.destination} />
-          {p.signalsOn && !p.demoOn && <SignalMarkers features={p.signalFeatures} states={p.signalStates} clockOffsetMs={p.signalClockOffsetMs} />}
-          {p.demoOn && <DemoSignalMarkers features={p.demoFeatures} clockOffsetMs={p.demoClockOffsetMs} />}
+          {p.signalsOn && !p.demoOn && (
+            <SignalMarkers
+              features={p.signalFeatures}
+              states={p.signalStates}
+              clockOffsetMs={p.signalClockOffsetMs}
+            />
+          )}
+          {p.demoOn && (
+            <DemoSignalMarkers features={p.demoFeatures} clockOffsetMs={p.demoClockOffsetMs} />
+          )}
         </Map>
       )}
       {p.demoOn && (
@@ -127,7 +166,10 @@ function MapInner(p: MapViewProps) {
         onDemo={p.onDemo}
       />
       {config.mapIdIsDemo && (
-        <p className="map-footnote">Usando DEMO_MAP_ID (somente testes). Defina VITE_GOOGLE_MAPS_MAP_ID com um Map ID vetorial.</p>
+        <p className="map-footnote">
+          Usando DEMO_MAP_ID (somente testes). Defina VITE_GOOGLE_MAPS_MAP_ID com um Map ID
+          vetorial.
+        </p>
       )}
     </div>
   );

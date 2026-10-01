@@ -1,9 +1,21 @@
 import { encodePolyline, type PlaceSummary } from '@nexus/shared';
 import { describe, expect, it } from 'vitest';
 import { parseCsv } from '../src/lib/csv';
-import { AirportDirectory, parseOurAirportsCsv, selectNearbyAirports, type AirportRecord } from '../src/providers/airports/AirportDirectory';
-import { AeroApiFlightProvider, mapSchedules } from '../src/providers/flights/AeroApiFlightProvider';
-import { UnconfiguredFlightProvider, type FlightProvider, type ScheduledFlight } from '../src/providers/flights/FlightProvider';
+import {
+  AirportDirectory,
+  parseOurAirportsCsv,
+  selectNearbyAirports,
+  type AirportRecord,
+} from '../src/providers/airports/AirportDirectory';
+import {
+  AeroApiFlightProvider,
+  mapSchedules,
+} from '../src/providers/flights/AeroApiFlightProvider';
+import {
+  UnconfiguredFlightProvider,
+  type FlightProvider,
+  type ScheduledFlight,
+} from '../src/providers/flights/FlightProvider';
 import { FlightService } from '../src/services/FlightService';
 import { RouteService } from '../src/services/RouteService';
 import type { TimeZoneService } from '../src/services/TimeZoneService';
@@ -30,7 +42,12 @@ describe('OurAirports', () => {
   it('mantém só aeroportos de médio/grande porte com voos regulares e IATA', () => {
     const list = parseOurAirportsCsv(CSV);
     expect(list.map((a) => a.iata)).toEqual(['BSB', 'GRU', 'CGH']);
-    expect(list[0]).toMatchObject({ icao: 'SBBR', municipality: 'Brasília', countryCode: 'BR', size: 'large_airport' });
+    expect(list[0]).toMatchObject({
+      icao: 'SBBR',
+      municipality: 'Brasília',
+      countryCode: 'BR',
+      size: 'large_airport',
+    });
   });
 
   it('seleciona aeroportos por distância garantindo um de grande porte', () => {
@@ -48,12 +65,47 @@ describe('OurAirports', () => {
 describe('AeroAPI', () => {
   const raw = {
     scheduled: [
-      { ident: 'TST1001', ident_iata: 'TS1001', actual_ident: null, actual_ident_iata: null, aircraft_type: 'A320', scheduled_out: '2026-10-20T17:10:00Z', scheduled_in: '2026-10-20T18:55:00Z', origin_iata: 'BSB', destination_iata: 'GRU' },
+      {
+        ident: 'TST1001',
+        ident_iata: 'TS1001',
+        actual_ident: null,
+        actual_ident_iata: null,
+        aircraft_type: 'A320',
+        scheduled_out: '2026-10-20T17:10:00Z',
+        scheduled_in: '2026-10-20T18:55:00Z',
+        origin_iata: 'BSB',
+        destination_iata: 'GRU',
+      },
       // codeshare do mesmo voo físico
-      { ident: 'XYZ9001', ident_iata: 'XY9001', actual_ident: 'TST1001', actual_ident_iata: 'TS1001', aircraft_type: 'A320', scheduled_out: '2026-10-20T17:10:00Z', scheduled_in: '2026-10-20T18:55:00Z', origin_iata: 'BSB', destination_iata: 'GRU' },
-      { ident: 'TST1003', ident_iata: 'TS1003', actual_ident: null, actual_ident_iata: null, aircraft_type: 'B738', scheduled_out: '2026-10-20T12:00:00Z', scheduled_in: '2026-10-20T13:40:00Z', origin_iata: 'BSB', destination_iata: 'GRU' },
+      {
+        ident: 'XYZ9001',
+        ident_iata: 'XY9001',
+        actual_ident: 'TST1001',
+        actual_ident_iata: 'TS1001',
+        aircraft_type: 'A320',
+        scheduled_out: '2026-10-20T17:10:00Z',
+        scheduled_in: '2026-10-20T18:55:00Z',
+        origin_iata: 'BSB',
+        destination_iata: 'GRU',
+      },
+      {
+        ident: 'TST1003',
+        ident_iata: 'TS1003',
+        actual_ident: null,
+        actual_ident_iata: null,
+        aircraft_type: 'B738',
+        scheduled_out: '2026-10-20T12:00:00Z',
+        scheduled_in: '2026-10-20T13:40:00Z',
+        origin_iata: 'BSB',
+        destination_iata: 'GRU',
+      },
       // incompleto → ignorado
-      { ident: 'TST1004', scheduled_out: '2026-10-20T12:00:00Z', origin_iata: 'BSB', destination_iata: 'GRU' },
+      {
+        ident: 'TST1004',
+        scheduled_out: '2026-10-20T12:00:00Z',
+        origin_iata: 'BSB',
+        destination_iata: 'GRU',
+      },
     ],
     links: null,
     num_pages: 1,
@@ -62,7 +114,11 @@ describe('AeroAPI', () => {
   it('mapeia horários publicados, ordena e remove duplicata de codeshare', () => {
     const flights = mapSchedules(raw);
     expect(flights.map((f) => f.ident)).toEqual(['TS1003', 'TS1001']);
-    expect(flights[1]).toMatchObject({ scheduledOut: '2026-10-20T17:10:00Z', scheduledIn: '2026-10-20T18:55:00Z', isCodeshare: false });
+    expect(flights[1]).toMatchObject({
+      scheduledOut: '2026-10-20T17:10:00Z',
+      scheduledIn: '2026-10-20T18:55:00Z',
+      isCodeshare: false,
+    });
   });
 
   it('chama /schedules com cabeçalho x-apikey e sem codeshares', async () => {
@@ -71,7 +127,12 @@ describe('AeroAPI', () => {
       seen = { url, key: new Headers(init?.headers).get('x-apikey') };
       return new Response(JSON.stringify(raw), { status: 200 });
     }) as typeof fetch;
-    const p = new AeroApiFlightProvider({ apiKey: 'k-test', baseUrl: 'https://aeroapi.example/aeroapi', maxRequestsPerMinute: 10, fetchFn });
+    const p = new AeroApiFlightProvider({
+      apiKey: 'k-test',
+      baseUrl: 'https://aeroapi.example/aeroapi',
+      maxRequestsPerMinute: 10,
+      fetchFn,
+    });
     const flights = await p.searchDirectFlights({
       originIata: 'BSB',
       destinationIata: 'GRU',
@@ -92,10 +153,19 @@ describe('AeroAPI', () => {
         apiKey: 'x',
         baseUrl: 'https://aeroapi.example',
         maxRequestsPerMinute: 10,
-        fetchFn: (async () => new Response(JSON.stringify({ title: 'err', detail: 'd' }), { status })) as typeof fetch,
+        fetchFn: (async () =>
+          new Response(JSON.stringify({ title: 'err', detail: 'd' }), { status })) as typeof fetch,
       });
-    const q = { originIata: 'BSB', destinationIata: 'GRU', departureWindowStart: '2026-10-20T11:00:00Z', departureWindowEnd: '2026-10-21T11:00:00Z' };
-    await expect(make(401).searchDirectFlights(q)).rejects.toMatchObject({ code: 'UPSTREAM', message: expect.stringContaining('recusada') });
+    const q = {
+      originIata: 'BSB',
+      destinationIata: 'GRU',
+      departureWindowStart: '2026-10-20T11:00:00Z',
+      departureWindowEnd: '2026-10-21T11:00:00Z',
+    };
+    await expect(make(401).searchDirectFlights(q)).rejects.toMatchObject({
+      code: 'UPSTREAM',
+      message: expect.stringContaining('recusada'),
+    });
     await expect(make(429).searchDirectFlights(q)).rejects.toMatchObject({ code: 'RATE_LIMITED' });
   });
 });
@@ -128,27 +198,63 @@ class FakeFlights implements FlightProvider {
   readonly maxFutureMs = 365 * 86_400_000;
   queries: Array<{ o: string; d: string; start: string; end: string }> = [];
   constructor(private readonly flights: ScheduledFlight[]) {}
-  async searchDirectFlights(q: { originIata: string; destinationIata: string; departureWindowStart: string; departureWindowEnd: string }) {
-    this.queries.push({ o: q.originIata, d: q.destinationIata, start: q.departureWindowStart, end: q.departureWindowEnd });
-    return this.flights.filter((f) => f.originIata === q.originIata && f.destinationIata === q.destinationIata);
+  async searchDirectFlights(q: {
+    originIata: string;
+    destinationIata: string;
+    departureWindowStart: string;
+    departureWindowEnd: string;
+  }) {
+    this.queries.push({
+      o: q.originIata,
+      d: q.destinationIata,
+      start: q.departureWindowStart,
+      end: q.departureWindowEnd,
+    });
+    return this.flights.filter(
+      (f) => f.originIata === q.originIata && f.destinationIata === q.destinationIata,
+    );
   }
 }
 
-const tz = { zoneFor: async () => 'America/Sao_Paulo', configured: true } as unknown as TimeZoneService;
+const tz = {
+  zoneFor: async () => 'America/Sao_Paulo',
+  configured: true,
+} as unknown as TimeZoneService;
 
-function flightService(provider: FlightProvider, opts: Partial<ConstructorParameters<typeof FlightService>[4]> = {}) {
+function flightService(
+  provider: FlightProvider,
+  opts: Partial<ConstructorParameters<typeof FlightService>[4]> = {},
+) {
   const leg = encodePolyline([
     { lat: -15.79, lng: -47.88 },
     { lat: -15.86, lng: -47.92 },
   ]);
   const { client, calls } = fakeRoutesClient((body) => ({
-    routes: [{ duration: '1800s', staticDuration: '1500s', distanceMeters: 20000, polyline: { encodedPolyline: leg }, legs: [{ steps: [] }] }],
+    routes: [
+      {
+        duration: '1800s',
+        staticDuration: '1500s',
+        distanceMeters: 20000,
+        polyline: { encodedPolyline: leg },
+        legs: [{ steps: [] }],
+      },
+    ],
     geocodingResults: {
-      origin: { type: 'address' in body.origin ? ['airport', 'establishment'] : ['street_address'] },
-      destination: { type: 'address' in body.destination ? ['airport', 'establishment'] : ['street_address'] },
+      origin: {
+        type: 'address' in body.origin ? ['airport', 'establishment'] : ['street_address'],
+      },
+      destination: {
+        type: 'address' in body.destination ? ['airport', 'establishment'] : ['street_address'],
+      },
     },
   }));
-  const routes = new RouteService(client, { languageCode: 'pt-BR', regionCode: 'BR', trafficOnPolyline: true, tolls: true, now: () => NOW });
+  const routes = new RouteService(client, {
+    languageCode: 'pt-BR',
+    regionCode: 'BR',
+    trafficOnPolyline: true,
+    tolls: true,
+    now: () => NOW,
+  });
   const airports = AirportDirectory.fromRecords(parseOurAirportsCsv(CSV) as AirportRecord[]);
   const svc = new FlightService(provider, airports, routes, tz, {
     minDistanceKm: 100,
@@ -161,7 +267,12 @@ function flightService(provider: FlightProvider, opts: Partial<ConstructorParame
   return { svc, calls };
 }
 
-const baseReq = { origin: BRASILIA, destination: SAO_PAULO, preDepartureMarginMinutes: 90, postArrivalMarginMinutes: 30 };
+const baseReq = {
+  origin: BRASILIA,
+  destination: SAO_PAULO,
+  preDepartureMarginMinutes: 90,
+  postArrivalMarginMinutes: 30,
+};
 
 describe('FlightService', () => {
   it('sem provedor configurado → not_configured (nenhum voo simulado)', async () => {
@@ -173,7 +284,11 @@ describe('FlightService', () => {
 
   it('trajeto curto → não há rota aérea adequada', async () => {
     const { svc } = flightService(new FakeFlights([]));
-    const r = await svc.flight({ ...baseReq, destination: { ...SAO_PAULO, location: { lat: -15.83, lng: -47.91 } }, time: { mode: 'now' } });
+    const r = await svc.flight({
+      ...baseReq,
+      destination: { ...SAO_PAULO, location: { lat: -15.83, lng: -47.91 } },
+      time: { mode: 'now' },
+    });
     expect(r.status).toBe('unavailable');
     expect(r.message).toContain('Não há rota aérea adequada disponível');
   });
@@ -183,16 +298,32 @@ describe('FlightService', () => {
     const { svc } = flightService(provider);
     const r = await svc.flight({ ...baseReq, time: { mode: 'now' } });
     expect(r.status).toBe('unavailable');
-    expect(r.message).toBe('Não encontramos voos diretos publicados entre os aeroportos próximos no período escolhido.');
+    expect(r.message).toBe(
+      'Não encontramos voos diretos publicados entre os aeroportos próximos no período escolhido.',
+    );
     expect(provider.queries.map((q) => `${q.o}-${q.d}`)).toEqual(['BSB-CGH', 'BSB-GRU']);
     expect(r.meta?.originAirports.map((a) => a.iata)).toEqual(['BSB']);
   });
 
   it('monta a viagem porta a porta: carro → margem → voo → margem → carro', async () => {
     const provider = new FakeFlights([
-      { ident: 'TS1003', originIata: 'BSB', destinationIata: 'GRU', scheduledOut: '2026-10-20T13:00:00Z', scheduledIn: '2026-10-20T14:40:00Z', isCodeshare: false },
+      {
+        ident: 'TS1003',
+        originIata: 'BSB',
+        destinationIata: 'GRU',
+        scheduledOut: '2026-10-20T13:00:00Z',
+        scheduledIn: '2026-10-20T14:40:00Z',
+        isCodeshare: false,
+      },
       // parte cedo demais (antes de dar tempo de chegar ao aeroporto + margem)
-      { ident: 'TS0999', originIata: 'BSB', destinationIata: 'CGH', scheduledOut: '2026-10-20T10:30:00Z', scheduledIn: '2026-10-20T12:10:00Z', isCodeshare: false },
+      {
+        ident: 'TS0999',
+        originIata: 'BSB',
+        destinationIata: 'CGH',
+        scheduledOut: '2026-10-20T10:30:00Z',
+        scheduledIn: '2026-10-20T12:10:00Z',
+        isCodeshare: false,
+      },
     ]);
     const { svc, calls } = flightService(provider);
     const r = await svc.flight({ ...baseReq, time: { mode: 'now' } });
@@ -206,7 +337,10 @@ describe('FlightService', () => {
     expect(flight.from.iata).toBe('BSB');
     expect(flight.to.iata).toBe('GRU');
     expect(flight.durationSeconds).toBe(100 * 60);
-    expect(flight.departure).toEqual({ instant: '2026-10-20T13:00:00Z', timeZone: 'America/Sao_Paulo' });
+    expect(flight.departure).toEqual({
+      instant: '2026-10-20T13:00:00Z',
+      timeZone: 'America/Sao_Paulo',
+    });
 
     // Saída de casa = partida (13:00Z) − margem (90 min) − carro (30 min) = 11:00Z;
     // chegada = pouso (14:40Z) + margem (30 min) + carro (30 min) = 15:40Z.
@@ -224,12 +358,31 @@ describe('FlightService', () => {
 
   it('chegar até: descarta voos que chegariam tarde demais', async () => {
     const provider = new FakeFlights([
-      { ident: 'TS2001', originIata: 'BSB', destinationIata: 'GRU', scheduledOut: '2026-10-20T13:00:00Z', scheduledIn: '2026-10-20T14:40:00Z', isCodeshare: false },
-      { ident: 'TS2002', originIata: 'BSB', destinationIata: 'GRU', scheduledOut: '2026-10-20T15:00:00Z', scheduledIn: '2026-10-20T16:40:00Z', isCodeshare: false },
+      {
+        ident: 'TS2001',
+        originIata: 'BSB',
+        destinationIata: 'GRU',
+        scheduledOut: '2026-10-20T13:00:00Z',
+        scheduledIn: '2026-10-20T14:40:00Z',
+        isCodeshare: false,
+      },
+      {
+        ident: 'TS2002',
+        originIata: 'BSB',
+        destinationIata: 'GRU',
+        scheduledOut: '2026-10-20T15:00:00Z',
+        scheduledIn: '2026-10-20T16:40:00Z',
+        isCodeshare: false,
+      },
     ]);
     const { svc } = flightService(provider);
     // Chegar até 13:00 local (16:00Z): o TS2002 pousaria 16:40Z → descartado.
-    const r = await svc.flight({ ...baseReq, time: { mode: 'arrive_by', instant: '2026-10-20T16:00:00Z' } });
-    expect(r.options.map((o) => (o.segments[2]!.kind === 'flight' ? o.segments[2]!.flight.ident : ''))).toEqual(['TS2001']);
+    const r = await svc.flight({
+      ...baseReq,
+      time: { mode: 'arrive_by', instant: '2026-10-20T16:00:00Z' },
+    });
+    expect(
+      r.options.map((o) => (o.segments[2]!.kind === 'flight' ? o.segments[2]!.flight.ident : '')),
+    ).toEqual(['TS2001']);
   });
 });

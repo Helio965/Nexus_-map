@@ -21,7 +21,8 @@ export interface NearbyAirport extends AirportRecord {
   distanceKm: number;
 }
 
-export const OURAIRPORTS_ATTRIBUTION = 'OurAirports (domínio público) — https://ourairports.com/data/';
+export const OURAIRPORTS_ATTRIBUTION =
+  'OurAirports (domínio público) — https://ourairports.com/data/';
 
 /**
  * Extrai do airports.csv do OurAirports somente aeroportos reais com voos regulares:
@@ -58,7 +59,11 @@ export function parseOurAirportsCsv(text: string): AirportRecord[] {
     const lat = Number(row[idx.lat]);
     const lng = Number(row[idx.lng]);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-    const icao = ((idx.icao >= 0 ? row[idx.icao] : '') || (idx.gps >= 0 ? row[idx.gps] : '') || '').trim();
+    const icao = (
+      (idx.icao >= 0 ? row[idx.icao] : '') ||
+      (idx.gps >= 0 ? row[idx.gps] : '') ||
+      ''
+    ).trim();
     out.push({
       iata,
       icao: /^[A-Z0-9]{4}$/.test(icao) ? icao : undefined,

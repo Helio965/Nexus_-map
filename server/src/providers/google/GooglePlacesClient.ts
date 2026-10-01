@@ -34,7 +34,8 @@ const AUTOCOMPLETE_MASK = [
 ].join(',');
 
 /** Essentials + Pro (displayName, primaryType*, timeZone). */
-const DETAILS_MASK = 'id,displayName,formattedAddress,location,types,primaryType,primaryTypeDisplayName,timeZone';
+const DETAILS_MASK =
+  'id,displayName,formattedAddress,location,types,primaryType,primaryTypeDisplayName,timeZone';
 
 export class GooglePlacesClient {
   constructor(
@@ -66,8 +67,15 @@ export class GooglePlacesClient {
     );
   }
 
-  details(placeId: string, sessionToken: string | undefined, signal?: AbortSignal): Promise<RawPlaceDetails> {
-    const qs = new URLSearchParams({ languageCode: this.languageCode, regionCode: this.regionCode });
+  details(
+    placeId: string,
+    sessionToken: string | undefined,
+    signal?: AbortSignal,
+  ): Promise<RawPlaceDetails> {
+    const qs = new URLSearchParams({
+      languageCode: this.languageCode,
+      regionCode: this.regionCode,
+    });
     if (sessionToken) qs.set('sessionToken', sessionToken);
     return this.platform.callWithFieldMask<RawPlaceDetails>(
       PLACES_API_NAME,

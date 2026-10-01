@@ -13,7 +13,11 @@ describe('solveDepartureForArrival (chegar até, cálculo da última saída)', (
       // 40 min agora; 45 min saindo perto das 11:15Z
       return dep ? 2700 : 2400;
     };
-    const sol = await solveDepartureForArrival({ deadline: '2026-10-20T12:00:00Z', now: NOW, estimate });
+    const sol = await solveDepartureForArrival({
+      deadline: '2026-10-20T12:00:00Z',
+      now: NOW,
+      estimate,
+    });
     expect(sol.feasible).toBe(true);
     expect(sol.departure).toBe('2026-10-20T11:15:00Z');
     expect(diffSeconds(sol.departure, '2026-10-20T12:00:00Z')).toBe(2700);
@@ -60,17 +64,29 @@ describe('solveDepartureForArrival (chegar até, cálculo da última saída)', (
 describe('validateRequestedTime', () => {
   it('aceita "agora" e horários futuros', () => {
     expect(validateRequestedTime({ mode: 'now' }, 'drive', NOW)).toBeNull();
-    expect(validateRequestedTime({ mode: 'depart_at', instant: '2026-10-20T10:00:00Z' }, 'drive', NOW)).toBeNull();
+    expect(
+      validateRequestedTime({ mode: 'depart_at', instant: '2026-10-20T10:00:00Z' }, 'drive', NOW),
+    ).toBeNull();
   });
 
   it('recusa horários no passado com mensagem clara', () => {
-    expect(validateRequestedTime({ mode: 'depart_at', instant: '2026-10-20T08:00:00Z' }, 'walk', NOW)).toContain('já passou');
-    expect(validateRequestedTime({ mode: 'arrive_by', instant: '2026-10-20T08:00:00Z' }, 'rail', NOW)).toContain('já passou');
+    expect(
+      validateRequestedTime({ mode: 'depart_at', instant: '2026-10-20T08:00:00Z' }, 'walk', NOW),
+    ).toContain('já passou');
+    expect(
+      validateRequestedTime({ mode: 'arrive_by', instant: '2026-10-20T08:00:00Z' }, 'rail', NOW),
+    ).toContain('já passou');
   });
 
   it('aplica o limite de 100 dias do transporte público e 1 ano dos voos', () => {
-    expect(validateRequestedTime({ mode: 'depart_at', instant: '2027-03-01T10:00:00Z' }, 'rail', NOW)).toContain('100 dias');
-    expect(validateRequestedTime({ mode: 'depart_at', instant: '2027-03-01T10:00:00Z' }, 'flight', NOW)).toBeNull();
-    expect(validateRequestedTime({ mode: 'depart_at', instant: '2027-11-01T10:00:00Z' }, 'flight', NOW)).toContain('1 ano');
+    expect(
+      validateRequestedTime({ mode: 'depart_at', instant: '2027-03-01T10:00:00Z' }, 'rail', NOW),
+    ).toContain('100 dias');
+    expect(
+      validateRequestedTime({ mode: 'depart_at', instant: '2027-03-01T10:00:00Z' }, 'flight', NOW),
+    ).toBeNull();
+    expect(
+      validateRequestedTime({ mode: 'depart_at', instant: '2027-11-01T10:00:00Z' }, 'flight', NOW),
+    ).toContain('1 ano');
   });
 });

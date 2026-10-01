@@ -1,4 +1,10 @@
-import { MODE_LABELS, type Capabilities, type PlaceSummary, type TimeMode, type TravelMode } from '@nexus/shared';
+import {
+  MODE_LABELS,
+  type Capabilities,
+  type PlaceSummary,
+  type TimeMode,
+  type TravelMode,
+} from '@nexus/shared';
 import { useState } from 'react';
 import { api } from '../../api/client';
 import type { ModeChoice, PlannerState } from '../../state/plannerReducer';
@@ -41,8 +47,15 @@ const MODE_CHOICES: Array<{ value: ModeChoice; label: string }> = [
 export function RouteForm({ state, capabilities, busy, actions }: Props) {
   const [locating, setLocating] = useState(false);
   const bias = state.origin.place?.location ?? null;
-  const zonePlace = state.time.mode === 'depart_at' ? state.origin.place : state.time.mode === 'arrive_by' ? state.destination.place : null;
-  const zone = zonePlace?.timeZone ?? (zonePlace?.source === 'device_geolocation' ? deviceTimeZone() : undefined);
+  const zonePlace =
+    state.time.mode === 'depart_at'
+      ? state.origin.place
+      : state.time.mode === 'arrive_by'
+        ? state.destination.place
+        : null;
+  const zone =
+    zonePlace?.timeZone ??
+    (zonePlace?.source === 'device_geolocation' ? deviceTimeZone() : undefined);
   const showMargins = state.modeChoice === 'compare' || state.modeChoice === 'flight';
 
   function locateMe() {
@@ -86,7 +99,8 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
 
   const modeDisabled = (m: ModeChoice): string | null => {
     if (!capabilities) return null;
-    if (m === 'flight' && !capabilities.flights.configured) return 'Fonte de voos não configurada no servidor';
+    if (m === 'flight' && !capabilities.flights.configured)
+      return 'Fonte de voos não configurada no servidor';
     return null;
   };
 
@@ -119,12 +133,24 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
           onText={actions.setDestinationText}
           onPlace={(p, t) => actions.setDestinationPlace(p, t)}
         />
-        <button type="button" className="icon-btn route-form__swap" onClick={actions.swap} aria-label="Inverter origem e destino" title="Inverter origem e destino">
+        <button
+          type="button"
+          className="icon-btn route-form__swap"
+          onClick={actions.swap}
+          aria-label="Inverter origem e destino"
+          title="Inverter origem e destino"
+        >
           <Icon name="swap" />
         </button>
       </div>
 
-      <button type="button" className="text-btn" onClick={locateMe} disabled={locating} aria-busy={locating}>
+      <button
+        type="button"
+        className="text-btn"
+        onClick={locateMe}
+        disabled={locating}
+        aria-busy={locating}
+      >
         {locating ? <Spinner /> : <Icon name="locate" size={16} />}
         Utilizar minha localização como origem
       </button>
@@ -133,7 +159,10 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
         <legend>Horário</legend>
         <div className="segmented" role="radiogroup" aria-label="Opção de horário">
           {TIME_OPTIONS.map((o) => (
-            <label key={o.value} className={`segmented__item ${state.time.mode === o.value ? 'is-active' : ''}`}>
+            <label
+              key={o.value}
+              className={`segmented__item ${state.time.mode === o.value ? 'is-active' : ''}`}
+            >
               <input
                 type="radio"
                 name="time-mode"
@@ -149,17 +178,30 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
           <div className="time-row">
             <label className="mini-field">
               <span>Data</span>
-              <input type="date" required value={state.time.date ?? ''} onChange={(e) => actions.setTime({ ...state.time, date: e.target.value })} />
+              <input
+                type="date"
+                required
+                value={state.time.date ?? ''}
+                onChange={(e) => actions.setTime({ ...state.time, date: e.target.value })}
+              />
             </label>
             <label className="mini-field">
               <span>Horário</span>
-              <input type="time" required step={60} value={state.time.time ?? ''} onChange={(e) => actions.setTime({ ...state.time, time: e.target.value })} />
+              <input
+                type="time"
+                required
+                step={60}
+                value={state.time.time ?? ''}
+                onChange={(e) => actions.setTime({ ...state.time, time: e.target.value })}
+              />
             </label>
           </div>
         )}
         {state.time.mode !== 'now' && (
           <p className="hint">
-            {state.time.mode === 'depart_at' ? 'Horário local da origem' : 'Horário local do destino'}
+            {state.time.mode === 'depart_at'
+              ? 'Horário local da origem'
+              : 'Horário local do destino'}
             {zone ? ` (${zone})` : ' — selecione o local para identificar o fuso.'}
           </p>
         )}
@@ -171,8 +213,18 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
           {MODE_CHOICES.map((m) => {
             const why = modeDisabled(m.value);
             return (
-              <label key={m.value} className={`mode-chip ${state.modeChoice === m.value ? 'is-active' : ''} ${why ? 'is-limited' : ''}`} title={why ?? undefined}>
-                <input type="radio" name="mode" value={m.value} checked={state.modeChoice === m.value} onChange={() => actions.setModeChoice(m.value)} />
+              <label
+                key={m.value}
+                className={`mode-chip ${state.modeChoice === m.value ? 'is-active' : ''} ${why ? 'is-limited' : ''}`}
+                title={why ?? undefined}
+              >
+                <input
+                  type="radio"
+                  name="mode"
+                  value={m.value}
+                  checked={state.modeChoice === m.value}
+                  onChange={() => actions.setModeChoice(m.value)}
+                />
                 <ModeIcon mode={m.value === 'compare' ? 'compare' : (m.value as TravelMode)} />
                 <span>{m.label}</span>
               </label>
@@ -180,7 +232,10 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
           })}
         </div>
         {capabilities && !capabilities.flights.configured && (
-          <p className="hint">* Avião: nenhuma fonte de voos configurada no servidor — o modo informará isso em vez de exibir voos.</p>
+          <p className="hint">
+            * Avião: nenhuma fonte de voos configurada no servidor — o modo informará isso em vez de
+            exibir voos.
+          </p>
         )}
       </fieldset>
 
@@ -190,14 +245,31 @@ export function RouteForm({ state, capabilities, busy, actions }: Props) {
           <div className="time-row">
             <label className="mini-field">
               <span>Antes do voo (min)</span>
-              <input type="number" min={0} max={600} step={5} value={state.margins.pre} onChange={(e) => actions.setMargins({ pre: clampInt(e.target.value, 0, 600) })} />
+              <input
+                type="number"
+                min={0}
+                max={600}
+                step={5}
+                value={state.margins.pre}
+                onChange={(e) => actions.setMargins({ pre: clampInt(e.target.value, 0, 600) })}
+              />
             </label>
             <label className="mini-field">
               <span>Após o pouso (min)</span>
-              <input type="number" min={0} max={300} step={5} value={state.margins.post} onChange={(e) => actions.setMargins({ post: clampInt(e.target.value, 0, 300) })} />
+              <input
+                type="number"
+                min={0}
+                max={300}
+                step={5}
+                value={state.margins.post}
+                onChange={(e) => actions.setMargins({ post: clampInt(e.target.value, 0, 300) })}
+              />
             </label>
           </div>
-          <p className="hint">Definidas por você. Não são tempos oficiais — confira as regras da companhia aérea e do aeroporto.</p>
+          <p className="hint">
+            Definidas por você. Não são tempos oficiais — confira as regras da companhia aérea e do
+            aeroporto.
+          </p>
         </fieldset>
       )}
 

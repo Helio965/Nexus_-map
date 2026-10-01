@@ -75,7 +75,17 @@ function segmentLines(seg: Segment, index: number, active: boolean): DrawableLin
   switch (seg.kind) {
     case 'drive': {
       const path = decodePolyline(seg.polyline);
-      if (!active) return [{ key: `s${index}`, path, color: COLORS.alternative, style: 'solid', weight: 5, zIndex: z }];
+      if (!active)
+        return [
+          {
+            key: `s${index}`,
+            path,
+            color: COLORS.alternative,
+            style: 'solid',
+            weight: 5,
+            zIndex: z,
+          },
+        ];
       return splitByTraffic(path, seg.traffic).map((part, j) => ({
         key: `s${index}-${j}`,
         path: part.path,
@@ -106,7 +116,7 @@ function segmentLines(seg: Segment, index: number, active: boolean): DrawableLin
         {
           key: `s${index}`,
           path,
-          color: active ? normalizeColor(seg.line.color) ?? COLORS.rail : COLORS.alternative,
+          color: active ? (normalizeColor(seg.line.color) ?? COLORS.rail) : COLORS.alternative,
           style: 'solid',
           weight: 7,
           zIndex: z + 1,
@@ -133,10 +143,12 @@ function segmentLines(seg: Segment, index: number, active: boolean): DrawableLin
 }
 
 export function linesForOption(option: RouteOption, active: boolean): DrawableLine[] {
-  return option.segments.flatMap((seg, i) => segmentLines(seg, i, active)).map((l) => ({
-    ...l,
-    key: `${option.id}-${l.key}`,
-  }));
+  return option.segments
+    .flatMap((seg, i) => segmentLines(seg, i, active))
+    .map((l) => ({
+      ...l,
+      key: `${option.id}-${l.key}`,
+    }));
 }
 
 export function normalizeColor(c: string | undefined): string | undefined {
@@ -159,8 +171,22 @@ export function stationsOf(option: RouteOption): StationMarker[] {
     if (s.kind !== 'transit') return;
     const color = normalizeColor(s.line.color) ?? COLORS.rail;
     const line = s.line.shortName ?? s.line.name ?? s.line.vehicleName ?? 'Linha';
-    if (s.departureStop.location) out.push({ key: `${i}-b`, stop: { ...s.departureStop, location: s.departureStop.location }, role: 'board', line, color });
-    if (s.arrivalStop.location) out.push({ key: `${i}-a`, stop: { ...s.arrivalStop, location: s.arrivalStop.location }, role: 'alight', line, color });
+    if (s.departureStop.location)
+      out.push({
+        key: `${i}-b`,
+        stop: { ...s.departureStop, location: s.departureStop.location },
+        role: 'board',
+        line,
+        color,
+      });
+    if (s.arrivalStop.location)
+      out.push({
+        key: `${i}-a`,
+        stop: { ...s.arrivalStop, location: s.arrivalStop.location },
+        role: 'alight',
+        line,
+        color,
+      });
   });
   return out;
 }
@@ -179,7 +205,9 @@ export function optionBounds(option: RouteOption): Bounds | undefined {
 }
 
 /** Extensão (m) de cada categoria de trânsito informada pela API na rota. */
-export function trafficSummary(option: RouteOption): Array<{ speed: TrafficSpeed; meters: number }> {
+export function trafficSummary(
+  option: RouteOption,
+): Array<{ speed: TrafficSpeed; meters: number }> {
   const totals = new Map<TrafficSpeed, number>();
   for (const seg of option.segments) {
     if (seg.kind !== 'drive' || !seg.traffic) continue;
@@ -187,7 +215,8 @@ export function trafficSummary(option: RouteOption): Array<{ speed: TrafficSpeed
     for (const part of splitByTraffic(path, seg.traffic)) {
       if (!part.speed) continue;
       let m = 0;
-      for (let i = 1; i < part.path.length; i++) m += haversineMeters(part.path[i - 1]!, part.path[i]!);
+      for (let i = 1; i < part.path.length; i++)
+        m += haversineMeters(part.path[i - 1]!, part.path[i]!);
       totals.set(part.speed, (totals.get(part.speed) ?? 0) + m);
     }
   }

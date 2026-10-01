@@ -28,8 +28,11 @@ export default function Map3DView({
           { lat: b.south, lng: b.west },
           { lat: b.north, lng: b.east },
         ]
-      : [origin?.location, destination?.location].filter((x): x is { lat: number; lng: number } => !!x);
-    if (pts.length === 0) return { center: { lat: -15.7942, lng: -47.8822, altitude: 0 }, range: 4_000_000 };
+      : [origin?.location, destination?.location].filter(
+          (x): x is { lat: number; lng: number } => !!x,
+        );
+    if (pts.length === 0)
+      return { center: { lat: -15.7942, lng: -47.8822, altitude: 0 }, range: 4_000_000 };
     const a = pts[0]!;
     const c = pts[pts.length - 1]!;
     const center = { lat: (a.lat + c.lat) / 2, lng: (a.lng + c.lng) / 2, altitude: 0 };
@@ -70,7 +73,11 @@ export default function Map3DView({
         {origin && <Marker3D position={origin.location} label="A — Origem" />}
         {destination && <Marker3D position={destination.location} label="B — Destino" />}
       </Map3D>
-      {selected?.mode === 'flight' && <p className="map-footnote">No 3D, o trecho aéreo também é apenas uma representação, não a trajetória real.</p>}
+      {selected?.mode === 'flight' && (
+        <p className="map-footnote">
+          No 3D, o trecho aéreo também é apenas uma representação, não a trajetória real.
+        </p>
+      )}
     </div>
   );
 }

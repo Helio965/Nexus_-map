@@ -97,7 +97,11 @@ export function compareModes(
     if (r === undefined) return { mode, status: 'not_requested' };
     if (r === 'pending') return { mode, status: 'pending' };
     if (r.status !== 'available' || r.options.length === 0) {
-      return { mode, status: r.status === 'available' ? 'unavailable' : r.status, message: r.message };
+      return {
+        mode,
+        status: r.status === 'available' ? 'unavailable' : r.status,
+        message: r.message,
+      };
     }
     const best = selectBestOption(r.options, time, now);
     if (!best) return { mode, status: 'unavailable', message: r.message };

@@ -66,7 +66,14 @@ const STREAM_ID_RE = /^[a-z_]+:\d+$/;
 export const streamIdsSchema = z
   .string()
   .max(10_000)
-  .transform((s) => [...new Set(s.split(',').map((x) => x.trim()).filter(Boolean))])
+  .transform((s) => [
+    ...new Set(
+      s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean),
+    ),
+  ])
   .pipe(z.array(z.string().regex(STREAM_ID_RE)).min(1).max(300));
 
 export const autocompleteQuerySchema = z.object({

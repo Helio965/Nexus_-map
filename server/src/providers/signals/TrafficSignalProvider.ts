@@ -20,7 +20,12 @@ export function buildRouteGeometry(encoded: string): RouteGeometry | null {
   const path = decodePolyline(encoded);
   if (path.length < 2) return null;
   const cumulative = cumulativeDistances(path);
-  return { path, cumulative, lengthMeters: cumulative[cumulative.length - 1]!, bounds: boundsOf(path)! };
+  return {
+    path,
+    cumulative,
+    lengthMeters: cumulative[cumulative.length - 1]!,
+    bounds: boundsOf(path)!,
+  };
 }
 
 /**

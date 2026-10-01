@@ -31,7 +31,14 @@ export type FetchFn = typeof fetch;
 export async function fetchJson<T>(
   fetchFn: FetchFn,
   url: string,
-  { method = 'GET', headers = {}, body, rawBody, timeoutMs = 15_000, signal }: FetchJsonOptions = {},
+  {
+    method = 'GET',
+    headers = {},
+    body,
+    rawBody,
+    timeoutMs = 15_000,
+    signal,
+  }: FetchJsonOptions = {},
   providerName = 'provedor externo',
 ): Promise<T> {
   const timeout = AbortSignal.timeout(timeoutMs);
@@ -51,10 +58,16 @@ export async function fetchJson<T>(
   } catch (err) {
     if (signal?.aborted) throw err;
     if (isTimeoutError(err) || timeout.aborted) {
-      throw new AppError('UPSTREAM_TIMEOUT', `Tempo esgotado ao consultar ${providerName}.`, { provider: providerName, cause: err });
+      throw new AppError('UPSTREAM_TIMEOUT', `Tempo esgotado ao consultar ${providerName}.`, {
+        provider: providerName,
+        cause: err,
+      });
     }
     if (isAbortError(err)) throw err;
-    throw new AppError('UPSTREAM', `Não foi possível conectar a ${providerName}.`, { provider: providerName, cause: err });
+    throw new AppError('UPSTREAM', `Não foi possível conectar a ${providerName}.`, {
+      provider: providerName,
+      cause: err,
+    });
   }
 
   const text = await res.text();

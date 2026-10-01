@@ -76,13 +76,21 @@ export class GoogleRoutesClient {
     return this.platform.configured;
   }
 
-  computeRoutes(body: ComputeRoutesBody, fieldMask: string, signal?: AbortSignal): Promise<RawComputeRoutesResponse> {
-    return this.platform.callWithFieldMask<RawComputeRoutesResponse>(ROUTES_API_NAME, COMPUTE_ROUTES_URL, {
-      method: 'POST',
-      body,
-      fieldMask,
-      signal,
-      timeoutMs: 25_000,
-    });
+  computeRoutes(
+    body: ComputeRoutesBody,
+    fieldMask: string,
+    signal?: AbortSignal,
+  ): Promise<RawComputeRoutesResponse> {
+    return this.platform.callWithFieldMask<RawComputeRoutesResponse>(
+      ROUTES_API_NAME,
+      COMPUTE_ROUTES_URL,
+      {
+        method: 'POST',
+        body,
+        fieldMask,
+        signal,
+        timeoutMs: 25_000,
+      },
+    );
   }
 }

@@ -7,12 +7,25 @@ import { describeTraffic } from '../src/services/TrafficService';
 import { DRIVE_PATH, driveRoute, fakeRoutesClient, request } from './fixtures/routes';
 
 const NOW = new Date('2026-10-20T10:00:00Z'); // 07:00 em Brasília
-const opts = { languageCode: 'pt-BR', regionCode: 'BR', trafficOnPolyline: true, tolls: true, now: () => NOW };
+const opts = {
+  languageCode: 'pt-BR',
+  regionCode: 'BR',
+  trafficOnPolyline: true,
+  tolls: true,
+  now: () => NOW,
+};
 
 describe('RouteService.drive', () => {
   it('sair agora: usa trânsito atual, alternativas e extras; não envia departureTime', async () => {
     const { client, calls } = fakeRoutesClient(() => ({
-      routes: [driveRoute(), driveRoute({ routeLabels: ['DEFAULT_ROUTE_ALTERNATE'], duration: '1300s', description: 'Via alternativa' })],
+      routes: [
+        driveRoute(),
+        driveRoute({
+          routeLabels: ['DEFAULT_ROUTE_ALTERNATE'],
+          duration: '1300s',
+          description: 'Via alternativa',
+        }),
+      ],
     }));
     const result = await new RouteService(client, opts).drive(request({ mode: 'now' }));
 
@@ -36,7 +49,10 @@ describe('RouteService.drive', () => {
     expect(main.traffic).toMatchObject({ freshness: 'live', delaySeconds: 180 });
     expect(main.departure.instant).toBe('2026-10-20T10:00:00Z');
     expect(main.arrival.instant).toBe('2026-10-20T10:18:00Z');
-    expect(main.tolls).toEqual({ present: true, estimatedPrices: [{ currencyCode: 'BRL', amount: 7.5 }] });
+    expect(main.tolls).toEqual({
+      present: true,
+      estimatedPrices: [{ currencyCode: 'BRL', amount: 7.5 }],
+    });
     expect(main.summary).toBe('Via Eixo Sintético');
     expect(main.isDefault).toBe(true);
     expect(result.options[1]!.isDefault).toBe(false);
@@ -95,7 +111,9 @@ describe('RouteService.drive', () => {
     // A chegada exibida vem da resposta final (saída + duração daquela resposta).
     const final = finals[finals.length - 1]!;
     expect(opt.departure.instant).toBe(final.body.departureTime);
-    expect(new Date(opt.arrival.instant).getTime()).toBeLessThanOrEqual(new Date(deadline).getTime());
+    expect(new Date(opt.arrival.instant).getTime()).toBeLessThanOrEqual(
+      new Date(deadline).getTime(),
+    );
     expect(opt.traffic.freshness).toBe('predicted');
   });
 
@@ -132,7 +150,9 @@ describe('RouteService.drive', () => {
 
   it('respeita a configuração que desliga extras Enterprise', async () => {
     const { client, calls } = fakeRoutesClient(() => ({ routes: [driveRoute()] }));
-    await new RouteService(client, { ...opts, trafficOnPolyline: false, tolls: false }).drive(request({ mode: 'now' }));
+    await new RouteService(client, { ...opts, trafficOnPolyline: false, tolls: false }).drive(
+      request({ mode: 'now' }),
+    );
     expect(calls[0]!.body.extraComputations).toBeUndefined();
   });
 });
@@ -140,7 +160,14 @@ describe('RouteService.drive', () => {
 describe('RouteService.walk', () => {
   it('calcula rota de pedestre própria (WALK) e sempre exibe o aviso de beta', async () => {
     const { client, calls } = fakeRoutesClient(() => ({
-      routes: [driveRoute({ duration: '5400s', staticDuration: '5400s', warnings: ['Aviso da API sintético'], travelAdvisory: {} })],
+      routes: [
+        driveRoute({
+          duration: '5400s',
+          staticDuration: '5400s',
+          warnings: ['Aviso da API sintético'],
+          travelAdvisory: {},
+        }),
+      ],
     }));
     const result = await new RouteService(client, opts).walk(request({ mode: 'now' }));
     expect(calls[0]!.body.travelMode).toBe('WALK');
@@ -153,7 +180,9 @@ describe('RouteService.walk', () => {
   });
 
   it('chegar até: saída = prazo − duração da caminhada', async () => {
-    const { client } = fakeRoutesClient(() => ({ routes: [driveRoute({ duration: '4620s', travelAdvisory: {} })] }));
+    const { client } = fakeRoutesClient(() => ({
+      routes: [driveRoute({ duration: '4620s', travelAdvisory: {} })],
+    }));
     const result = await new RouteService(client, opts).walk(
       request({ mode: 'arrive_by', instant: '2026-10-20T12:00:00Z', zone: 'America/Sao_Paulo' }),
     );
@@ -164,14 +193,27 @@ describe('RouteService.walk', () => {
 
 describe('mapeadores', () => {
   it('descarta intervalos de trânsito inválidos em vez de corrigi-los', () => {
-    expect(mapTrafficIntervals([{ startPolylinePointIndex: 3, endPolylinePointIndex: 3, speed: 'SLOW' }], 10)).toBeUndefined();
-    expect(mapTrafficIntervals([{ endPolylinePointIndex: 2, speed: 'SPEED_UNSPECIFIED' }], 10)).toBeUndefined();
+    expect(
+      mapTrafficIntervals(
+        [{ startPolylinePointIndex: 3, endPolylinePointIndex: 3, speed: 'SLOW' }],
+        10,
+      ),
+    ).toBeUndefined();
+    expect(
+      mapTrafficIntervals([{ endPolylinePointIndex: 2, speed: 'SPEED_UNSPECIFIED' }], 10),
+    ).toBeUndefined();
     expect(mapTrafficIntervals(undefined, 10)).toBeUndefined();
   });
 
   it('segue a semântica oficial de TollInfo', () => {
-    expect(mapTolls(driveRoute({ travelAdvisory: {} }), true)).toEqual({ present: false, estimatedPrices: [] });
-    expect(mapTolls(driveRoute({ travelAdvisory: { tollInfo: {} } }), true)).toEqual({ present: true, estimatedPrices: [] });
+    expect(mapTolls(driveRoute({ travelAdvisory: {} }), true)).toEqual({
+      present: false,
+      estimatedPrices: [],
+    });
+    expect(mapTolls(driveRoute({ travelAdvisory: { tollInfo: {} } }), true)).toEqual({
+      present: true,
+      estimatedPrices: [],
+    });
     expect(mapTolls(driveRoute(), false)).toBeUndefined();
   });
 

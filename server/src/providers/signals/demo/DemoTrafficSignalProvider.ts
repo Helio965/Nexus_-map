@@ -25,12 +25,18 @@ const CYCLE: Array<{ phase: SignalPhase; seconds: number }> = [
 ];
 const CYCLE_LENGTH = CYCLE.reduce((a, c) => a + c.seconds, 0);
 
-export function simulatedPhaseAt(epochMs: number, offsetSeconds: number): { phase: SignalPhase; nextChangeMs: number } {
+export function simulatedPhaseAt(
+  epochMs: number,
+  offsetSeconds: number,
+): { phase: SignalPhase; nextChangeMs: number } {
   const t = Math.floor(epochMs / 1000) + offsetSeconds;
   let pos = ((t % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH;
   for (const step of CYCLE) {
     if (pos < step.seconds) {
-      return { phase: step.phase, nextChangeMs: (Math.floor(epochMs / 1000) + (step.seconds - pos)) * 1000 };
+      return {
+        phase: step.phase,
+        nextChangeMs: (Math.floor(epochMs / 1000) + (step.seconds - pos)) * 1000,
+      };
     }
     pos -= step.seconds;
   }
@@ -57,6 +63,11 @@ export class DemoTrafficSignalProvider {
         simulated: true,
       });
     }
-    return { simulated: true, banner: DEMO_SIGNAL_BANNER, features, serverTime: toInstant(nowDate) };
+    return {
+      simulated: true,
+      banner: DEMO_SIGNAL_BANNER,
+      features,
+      serverTime: toInstant(nowDate),
+    };
   }
 }

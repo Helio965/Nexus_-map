@@ -1,4 +1,10 @@
-import type { ModeResult, PlaceSummary, ResolvedTimeRequest, TimeSelection, TravelMode } from '@nexus/shared';
+import type {
+  ModeResult,
+  PlaceSummary,
+  ResolvedTimeRequest,
+  TimeSelection,
+  TravelMode,
+} from '@nexus/shared';
 
 export type ModeChoice = 'compare' | TravelMode;
 
@@ -71,11 +77,19 @@ export function plannerReducer(s: PlannerState, a: PlannerAction): PlannerState 
     case 'originText':
       return clearResults({ ...s, origin: { text: a.text, place: null }, formError: null });
     case 'originPlace':
-      return clearResults({ ...s, origin: { text: a.text ?? a.place?.name ?? '', place: a.place }, formError: null });
+      return clearResults({
+        ...s,
+        origin: { text: a.text ?? a.place?.name ?? '', place: a.place },
+        formError: null,
+      });
     case 'destinationText':
       return clearResults({ ...s, destination: { text: a.text, place: null }, formError: null });
     case 'destinationPlace':
-      return clearResults({ ...s, destination: { text: a.text ?? a.place?.name ?? '', place: a.place }, formError: null });
+      return clearResults({
+        ...s,
+        destination: { text: a.text ?? a.place?.name ?? '', place: a.place },
+        formError: null,
+      });
     case 'swap':
       return clearResults({ ...s, origin: s.destination, destination: s.origin, formError: null });
     case 'time':
@@ -94,7 +108,9 @@ export function plannerReducer(s: PlannerState, a: PlannerAction): PlannerState 
       return {
         ...s,
         run: a.run,
-        results: Object.fromEntries(a.run.requested.map((m) => [m, 'pending'])) as PlannerState['results'],
+        results: Object.fromEntries(
+          a.run.requested.map((m) => [m, 'pending']),
+        ) as PlannerState['results'],
         selected: null,
         userSelected: false,
         formError: null,
@@ -104,6 +120,10 @@ export function plannerReducer(s: PlannerState, a: PlannerAction): PlannerState 
       if (!s.run || s.run.id !== a.runId) return s; // resposta de um cálculo antigo
       return { ...s, results: { ...s.results, [a.result.mode]: a.result } };
     case 'select':
-      return { ...s, selected: { mode: a.mode, optionId: a.optionId }, userSelected: s.userSelected || a.byUser };
+      return {
+        ...s,
+        selected: { mode: a.mode, optionId: a.optionId },
+        userSelected: s.userSelected || a.byUser,
+      };
   }
 }

@@ -15,12 +15,12 @@ import {
 import { validateRequestedTime } from './timeValidation';
 
 /** AbortSignal que dispara quando o cliente desiste da requisição (ex.: nova busca). */
-function clientSignal(req: Request, res: Response): AbortSignal {
+function clientSignal(_req: Request, res: Response): AbortSignal {
   const controller = new AbortController();
   res.on('close', () => {
-    if (!res.writableFinished) controller.abort(new DOMException('Client closed request', 'AbortError'));
+    if (!res.writableFinished)
+      controller.abort(new DOMException('Client closed request', 'AbortError'));
   });
-  void req;
   return controller.signal;
 }
 
@@ -39,15 +39,22 @@ export function apiRouter(services: Services, now: () => Date = () => new Date()
 
   r.get('/places/autocomplete', async (req, res) => {
     const q = autocompleteQuerySchema.parse(req.query);
-    const bias = q.lat !== undefined && q.lng !== undefined ? { lat: q.lat, lng: q.lng } : undefined;
-    const suggestions = await services.places.autocomplete(q.q, { sessionToken: q.session, bias }, clientSignal(req, res));
+    const bias =
+      q.lat !== undefined && q.lng !== undefined ? { lat: q.lat, lng: q.lng } : undefined;
+    const suggestions = await services.places.autocomplete(
+      q.q,
+      { sessionToken: q.session, bias },
+      clientSignal(req, res),
+    );
     res.json({ suggestions });
   });
 
   r.get('/places/details/:placeId', async (req, res) => {
     const placeId = String(req.params.placeId ?? '');
-    if (!/^[A-Za-z0-9_-]{10,512}$/.test(placeId)) throw new AppError('VALIDATION', 'Place ID inválido.');
-    const session = typeof req.query.session === 'string' ? req.query.session.slice(0, 100) : undefined;
+    if (!/^[A-Za-z0-9_-]{10,512}$/.test(placeId))
+      throw new AppError('VALIDATION', 'Place ID inválido.');
+    const session =
+      typeof req.query.session === 'string' ? req.query.session.slice(0, 100) : undefined;
     res.json(await services.places.details(placeId, session, clientSignal(req, res)));
   });
 
@@ -59,7 +66,10 @@ export function apiRouter(services: Services, now: () => Date = () => new Date()
   /* -------------------------------------------------------------- rotas */
 
   const modeHandler =
-    (mode: Exclude<TravelMode, 'flight'>, run: (body: RouteRequest, signal: AbortSignal) => Promise<ModeResult>) =>
+    (
+      mode: Exclude<TravelMode, 'flight'>,
+      run: (body: RouteRequest, signal: AbortSignal) => Promise<ModeResult>,
+    ) =>
     async (req: Request, res: Response) => {
       const body = routeRequestSchema.parse(req.body) as RouteRequest;
       const problem = validateRequestedTime(body.time, mode, now());
@@ -68,16 +78,32 @@ export function apiRouter(services: Services, now: () => Date = () => new Date()
       res.json(await runMode(mode, ROUTES_PROVIDER, () => run(body, signal), signal));
     };
 
-  r.post('/routes/drive', modeHandler('drive', (b, s) => services.routes.drive(b, s)));
-  r.post('/routes/walk', modeHandler('walk', (b, s) => services.routes.walk(b, s)));
-  r.post('/routes/rail', modeHandler('rail', (b, s) => services.transit.rail(b, s)));
+  r.post(
+    '/routes/drive',
+    modeHandler('drive', (b, s) => services.routes.drive(b, s)),
+  );
+  r.post(
+    '/routes/walk',
+    modeHandler('walk', (b, s) => services.routes.walk(b, s)),
+  );
+  r.post(
+    '/routes/rail',
+    modeHandler('rail', (b, s) => services.transit.rail(b, s)),
+  );
 
   r.post('/routes/flight', async (req, res) => {
     const body = flightRequestSchema.parse(req.body);
     const problem = validateRequestedTime(body.time, 'flight', now());
     if (problem) throw new AppError('VALIDATION', problem);
     const signal = clientSignal(req, res);
-    res.json(await runMode('flight', services.flights.providerName, () => services.flights.flight(body, signal), signal));
+    res.json(
+      await runMode(
+        'flight',
+        services.flights.providerName,
+        () => services.flights.flight(body, signal),
+        signal,
+      ),
+    );
   });
 
   /* ---------------------------------------------------------- semáforos */
@@ -105,7 +131,8 @@ export function apiRouter(services: Services, now: () => Date = () => new Date()
       'X-Accel-Buffering': 'no',
     });
     res.flushHeaders();
-    const send = (event: string, data: unknown) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    const send = (event: string, data: unknown) =>
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     send('hello', { serverTime: toInstant(now()), streams: streams.length });
     const unsubscribe = services.signals.subscribe(streams, (u) => send('state', u));
     const heartbeat = setInterval(() => send('ping', { serverTime: toInstant(now()) }), 15_000);

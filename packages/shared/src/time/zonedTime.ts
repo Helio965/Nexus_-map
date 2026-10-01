@@ -49,7 +49,11 @@ export function localDateTimeToInstant(
   ) {
     return { ok: false, reason: 'nonexistent_local_time' };
   }
-  return { ok: true, instant: dt.toUTC().toISO({ suppressMilliseconds: true })!, offsetMinutes: dt.offset };
+  return {
+    ok: true,
+    instant: dt.toUTC().toISO({ suppressMilliseconds: true })!,
+    offsetMinutes: dt.offset,
+  };
 }
 
 export interface LocalParts {

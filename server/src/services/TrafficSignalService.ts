@@ -68,7 +68,12 @@ export class TrafficSignalService {
     const telemetryResults = await Promise.allSettled(
       this.providers.map(async (p) => {
         if (!p.appliesTo(route)) {
-          reports.push({ id: p.id, name: p.name, status: 'not_applicable', attribution: p.attribution });
+          reports.push({
+            id: p.id,
+            name: p.name,
+            status: 'not_applicable',
+            attribution: p.attribution,
+          });
           return [] as TrafficSignalFeature[];
         }
         const features = await p.findAlongRoute(route, signal);
@@ -90,7 +95,13 @@ export class TrafficSignalService {
       const p = this.providers[i]!;
       if (r.status === 'fulfilled') telemetry.push(...r.value);
       else {
-        reports.push({ id: p.id, name: p.name, status: 'error', message: errorMessage(r.reason), attribution: p.attribution });
+        reports.push({
+          id: p.id,
+          name: p.name,
+          status: 'error',
+          message: errorMessage(r.reason),
+          attribution: p.attribution,
+        });
         messages.push(`${p.name}: ${errorMessage(r.reason)}`);
       }
     });
@@ -99,7 +110,13 @@ export class TrafficSignalService {
       const l = this.locators[i]!;
       if (r.status === 'fulfilled') located.push(...r.value);
       else {
-        reports.push({ id: l.id, name: l.name, status: 'error', message: errorMessage(r.reason), attribution: l.attribution });
+        reports.push({
+          id: l.id,
+          name: l.name,
+          status: 'error',
+          message: errorMessage(r.reason),
+          attribution: l.attribution,
+        });
         messages.push(`${l.name}: ${errorMessage(r.reason)}`);
       }
     });
@@ -107,11 +124,18 @@ export class TrafficSignalService {
     const features = mergeFeatures(telemetry, located);
     const anyLive = features.some((f) => f.telemetry.status === 'live');
     if (!anyLive && features.length > 0) {
-      messages.push('Nenhuma fonte de telemetria de semáforos está disponível para esta rota. Os semáforos são exibidos sem estado.');
+      messages.push(
+        'Nenhuma fonte de telemetria de semáforos está disponível para esta rota. Os semáforos são exibidos sem estado.',
+      );
     }
-    const allFailed = reports.length > 0 && reports.every((r) => r.status === 'error' || r.status === 'not_applicable');
+    const allFailed =
+      reports.length > 0 &&
+      reports.every((r) => r.status === 'error' || r.status === 'not_applicable');
     return {
-      status: allFailed && features.length === 0 && reports.some((r) => r.status === 'error') ? 'unavailable' : 'ok',
+      status:
+        allFailed && features.length === 0 && reports.some((r) => r.status === 'error')
+          ? 'unavailable'
+          : 'ok',
       features,
       messages,
       providers: reports,
@@ -128,13 +152,18 @@ export class TrafficSignalService {
   }
 
   subscribe(streamIds: string[], onUpdate: (u: SignalStateUpdate) => void): () => void {
-    const unsubs = [...this.groupByProvider(streamIds)].map(([p, ids]) => p.subscribe(ids, onUpdate));
+    const unsubs = [...this.groupByProvider(streamIds)].map(([p, ids]) =>
+      p.subscribe(ids, onUpdate),
+    );
     return () => unsubs.forEach((u) => u());
   }
 
   demoAlongRoute(encodedPolyline: string): DemoSignalResponse {
     if (!this.demo) {
-      throw new AppError('NOT_CONFIGURED', 'O modo demonstração de semáforos está desativado neste servidor.');
+      throw new AppError(
+        'NOT_CONFIGURED',
+        'O modo demonstração de semáforos está desativado neste servidor.',
+      );
     }
     const route = buildRouteGeometry(encodedPolyline);
     if (!route) throw new AppError('VALIDATION', 'Polilinha da rota inválida.');
@@ -156,15 +185,22 @@ export class TrafficSignalService {
 }
 
 /** Junta a fonte OSM ao semáforo com telemetria do mesmo cruzamento, sem duplicar marcadores. */
-export function mergeFeatures(telemetry: TrafficSignalFeature[], located: TrafficSignalFeature[]): TrafficSignalFeature[] {
+export function mergeFeatures(
+  telemetry: TrafficSignalFeature[],
+  located: TrafficSignalFeature[],
+): TrafficSignalFeature[] {
   const withTelemetry = telemetry.map((f) => ({ ...f, sources: [...f.sources] }));
   const result: TrafficSignalFeature[] = [...withTelemetry];
   for (const osm of located) {
-    const twin = withTelemetry.find((t) => haversineMeters(t.location, osm.location) <= MERGE_RADIUS_M);
+    const twin = withTelemetry.find(
+      (t) => haversineMeters(t.location, osm.location) <= MERGE_RADIUS_M,
+    );
     if (twin) twin.sources.push(...osm.sources);
     else result.push(osm);
   }
-  return result.sort((a, b) => (a.distanceAlongRouteMeters ?? 0) - (b.distanceAlongRouteMeters ?? 0));
+  return result.sort(
+    (a, b) => (a.distanceAlongRouteMeters ?? 0) - (b.distanceAlongRouteMeters ?? 0),
+  );
 }
 
 function errorMessage(err: unknown): string {

@@ -52,9 +52,9 @@ export function recommend(comparison: ComparisonResult): RecommendationResult {
   }
 
   const isArriveBy = comparison.timeMode === 'arrive_by' && !!comparison.deadline;
-  const candidates: Candidate[] = (isArriveBy ? available.filter((e) => e.meetsDeadline) : available).map(
-    (entry) => ({ entry }),
-  );
+  const candidates: Candidate[] = (
+    isArriveBy ? available.filter((e) => e.meetsDeadline) : available
+  ).map((entry) => ({ entry }));
 
   if (candidates.length === 0 && comparison.deadline) {
     return {

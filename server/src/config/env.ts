@@ -7,7 +7,11 @@ const boolFromString = (def: boolean) =>
   z
     .string()
     .optional()
-    .transform((v) => (v === undefined || v.trim() === '' ? def : ['1', 'true', 'yes', 'on'].includes(v.toLowerCase())));
+    .transform((v) =>
+      v === undefined || v.trim() === ''
+        ? def
+        : ['1', 'true', 'yes', 'on'].includes(v.toLowerCase()),
+    );
 
 const intFromString = (def: number, min: number, max: number) =>
   z
@@ -62,7 +66,12 @@ export type Env = z.output<typeof EnvSchema>;
 /** Carrega o .env da raiz do monorepo (se existir) sem sobrescrever variáveis já definidas. */
 export function loadDotEnv(): void {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  const candidates = [path.resolve(process.cwd(), '.env'), path.resolve(here, '../../../.env'), path.resolve(here, '../../.env')];
+  // cwd → raiz do monorepo a partir de server/dist (../../) → a partir de server/src/config (../../../)
+  const candidates = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(here, '../../.env'),
+    path.resolve(here, '../../../.env'),
+  ];
   for (const file of candidates) {
     if (existsSync(file)) {
       process.loadEnvFile(file);

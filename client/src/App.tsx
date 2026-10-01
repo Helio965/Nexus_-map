@@ -1,4 +1,11 @@
-import { FRESHNESS_LABELS, formatClock, type DataFreshness, type LatLng, type TrafficSignalFeature, type TravelMode } from '@nexus/shared';
+import {
+  FRESHNESS_LABELS,
+  formatClock,
+  type DataFreshness,
+  type LatLng,
+  type TrafficSignalFeature,
+  type TravelMode,
+} from '@nexus/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DataBadge, Notice } from './components/common/ui';
 import { RouteForm } from './components/form/RouteForm';
@@ -49,7 +56,12 @@ export default function App() {
   const padding = useMemo<MapPadding>(
     () =>
       isMobile
-        ? { top: 70, right: 24, left: 24, bottom: Math.round(SNAP_FRACTION[snap] * window.innerHeight) + 16 }
+        ? {
+            top: 70,
+            right: 24,
+            left: 24,
+            bottom: Math.round(SNAP_FRACTION[snap] * window.innerHeight) + 16,
+          }
         : { top: 90, right: 40, bottom: 40, left: PANEL_WIDTH + 48 },
     [isMobile, snap],
   );
@@ -75,18 +87,34 @@ export default function App() {
         </div>
       </header>
 
-      {!online && <Notice tone="warn">Você está sem conexão. As consultas serão retomadas quando a internet voltar.</Notice>}
-      {caps.status === 'error' && <Notice tone="error">Servidor indisponível ({caps.message}). Tentando reconectar…</Notice>}
+      {!online && (
+        <Notice tone="warn">
+          Você está sem conexão. As consultas serão retomadas quando a internet voltar.
+        </Notice>
+      )}
+      {caps.status === 'error' && (
+        <Notice tone="error">Servidor indisponível ({caps.message}). Tentando reconectar…</Notice>
+      )}
       {capabilities && !capabilities.google.serverKeyConfigured && (
         <Notice tone="warn" title="Servidor sem chave da Google Maps Platform">
-          Busca de locais e cálculo de rotas ficam indisponíveis até que <code>GOOGLE_MAPS_SERVER_KEY</code> seja configurada (veja o README).
+          Busca de locais e cálculo de rotas ficam indisponíveis até que{' '}
+          <code>GOOGLE_MAPS_SERVER_KEY</code> seja configurada (veja o README).
         </Notice>
       )}
 
-      <RouteForm state={state} capabilities={capabilities} busy={pending.length > 0} actions={actions} />
+      <RouteForm
+        state={state}
+        capabilities={capabilities}
+        busy={pending.length > 0}
+        actions={actions}
+      />
 
       <div ref={resultsRef} className="results-anchor" aria-hidden="true" />
-      {state.stale && <Notice tone="info">Os parâmetros mudaram. Clique em “Calcular rota” para atualizar os resultados.</Notice>}
+      {state.stale && (
+        <Notice tone="info">
+          Os parâmetros mudaram. Clique em “Calcular rota” para atualizar os resultados.
+        </Notice>
+      )}
       {state.run?.note && <p className="hint">{state.run.note}</p>}
 
       <ProgressList pending={pending} />
@@ -104,7 +132,11 @@ export default function App() {
         <ModeCards
           comparison={comparison}
           selectedMode={state.selected?.mode ?? null}
-          recommendedMode={state.run && state.run.requested.length > 1 ? (recommendation?.recommendation?.mode ?? null) : null}
+          recommendedMode={
+            state.run && state.run.requested.length > 1
+              ? (recommendation?.recommendation?.mode ?? null)
+              : null
+          }
           onSelect={(m: TravelMode, id: string) => {
             actions.select(m, id);
             if (isMobile) setSnap('half');
@@ -136,11 +168,14 @@ export default function App() {
         />
       )}
 
-      {state.run && pending.length === 0 && comparison?.entries.every((e) => e.status !== 'available') && (
-        <Notice tone="info">
-          Nenhum modo retornou uma opção real para este trajeto. Prefiro mostrar isso a exibir uma rota inventada.
-        </Notice>
-      )}
+      {state.run &&
+        pending.length === 0 &&
+        comparison?.entries.every((e) => e.status !== 'available') && (
+          <Notice tone="info">
+            Nenhum modo retornou uma opção real para este trajeto. Prefiro mostrar isso a exibir uma
+            rota inventada.
+          </Notice>
+        )}
 
       <footer className="legend">
         <p className="eyebrow">Legenda dos dados</p>
@@ -152,8 +187,13 @@ export default function App() {
           ))}
         </ul>
         <p className="legend__sources">
-          Mapas, lugares e rotas: Google Maps Platform. Aeroportos: OurAirports (domínio público). Voos: {capabilities?.flights.provider ?? 'não configurado'}.
-          Semáforos: © colaboradores do OpenStreetMap (ODbL){capabilities?.signals.hamburgTld ? '; telemetria: Freie und Hansestadt Hamburg (TLD, beta)' : ''}.
+          Mapas, lugares e rotas: Google Maps Platform. Aeroportos: OurAirports (domínio público).
+          Voos: {capabilities?.flights.provider ?? 'não configurado'}. Semáforos: © colaboradores do
+          OpenStreetMap (ODbL)
+          {capabilities?.signals.hamburgTld
+            ? '; telemetria: Freie und Hansestadt Hamburg (TLD, beta)'
+            : ''}
+          .
         </p>
       </footer>
     </div>

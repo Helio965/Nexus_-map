@@ -8,7 +8,11 @@ const DAY_S = 86_400;
  * Regras de horário antes de chamar os provedores (mensagens para o usuário).
  * Retorna null quando o horário é aceitável para o modo.
  */
-export function validateRequestedTime(time: ResolvedTimeRequest, mode: TravelMode, now: Date): string | null {
+export function validateRequestedTime(
+  time: ResolvedTimeRequest,
+  mode: TravelMode,
+  now: Date,
+): string | null {
   if (time.mode === 'now') return null;
   if (!time.instant) return 'Informe data e horário.';
   const nowIso = toInstant(now);

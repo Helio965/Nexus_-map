@@ -18,7 +18,11 @@ export class AppError extends Error {
   readonly details?: unknown;
   readonly provider?: string;
 
-  constructor(code: ApiErrorCode, message: string, opts: { details?: unknown; provider?: string; cause?: unknown } = {}) {
+  constructor(
+    code: ApiErrorCode,
+    message: string,
+    opts: { details?: unknown; provider?: string; cause?: unknown } = {},
+  ) {
     super(message, { cause: opts.cause });
     this.name = 'AppError';
     this.code = code;

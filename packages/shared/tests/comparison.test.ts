@@ -46,7 +46,11 @@ function result(mode: TravelMode, options: RouteOption[]): ModeResult {
 }
 
 // Chegar até 09:00 local (12:00Z)
-const ARRIVE_BY_0900: ResolvedTimeRequest = { mode: 'arrive_by', instant: '2026-10-20T12:00:00Z', zone: ZONE };
+const ARRIVE_BY_0900: ResolvedTimeRequest = {
+  mode: 'arrive_by',
+  instant: '2026-10-20T12:00:00Z',
+  zone: ZONE,
+};
 
 describe('selectBestOption', () => {
   it('em "chegar até", escolhe a menor duração entre as que cumprem o prazo', () => {
@@ -69,7 +73,11 @@ describe('selectBestOption', () => {
   });
 
   it('em "sair às", escolhe a que chega mais cedo', () => {
-    const t: ResolvedTimeRequest = { mode: 'depart_at', instant: '2026-10-20T11:00:00Z', zone: ZONE };
+    const t: ResolvedTimeRequest = {
+      mode: 'depart_at',
+      instant: '2026-10-20T11:00:00Z',
+      zone: ZONE,
+    };
     const fast = option('rail', 'fast', '2026-10-20T11:07:00Z', 39); // 11:46
     const slow = option('rail', 'slow', '2026-10-20T11:00:00Z', 52); // 11:52
     expect(selectBestOption([slow, fast], t, NOW)?.id).toBe('fast');
@@ -79,7 +87,11 @@ describe('selectBestOption', () => {
 describe('compareModes + recommend', () => {
   it('reproduz o cenário "CHEGAR ATÉ 09:00" e destaca quem atende ao prazo', () => {
     const results = {
-      drive: result('drive', [option('drive', 'd0', '2026-10-20T11:04:00Z', 38, { traffic: { freshness: 'predicted', delaySeconds: 360 } })]),
+      drive: result('drive', [
+        option('drive', 'd0', '2026-10-20T11:04:00Z', 38, {
+          traffic: { freshness: 'predicted', delaySeconds: 360 },
+        }),
+      ]),
       rail: result('rail', [option('rail', 'r0', '2026-10-20T11:00:00Z', 51, { transfers: 1 })]),
       walk: result('walk', [option('walk', 'w0', '2026-10-20T10:46:00Z', 134 + 74)]),
       flight: result('flight', []),
@@ -99,11 +111,17 @@ describe('compareModes + recommend', () => {
     expect(recommendation?.reasons[0]).toBe('chega às 08:42, antes do limite de 09:00');
     expect(recommendation?.reasons[1]).toContain('menor duração estimada');
     expect(recommendation?.reasons[1]).toContain('38 min contra 51 min de Metrô / trilhos');
-    expect(recommendation?.reasons).toContain('inclui 6 min de atraso estimado por trânsito (Routes API)');
+    expect(recommendation?.reasons).toContain(
+      'inclui 6 min de atraso estimado por trânsito (Routes API)',
+    );
   });
 
   it('marca como não atendida quando a saída necessária já passou', () => {
-    const t: ResolvedTimeRequest = { mode: 'arrive_by', instant: '2026-10-20T09:30:00Z', zone: ZONE };
+    const t: ResolvedTimeRequest = {
+      mode: 'arrive_by',
+      instant: '2026-10-20T09:30:00Z',
+      zone: ZONE,
+    };
     const results = { drive: result('drive', [option('drive', 'd', '2026-10-20T08:50:00Z', 38)]) };
     const cmp = compareModes(results, t, ZONE, NOW);
     const drive = cmp.entries.find((e) => e.mode === 'drive')!;
@@ -162,6 +180,10 @@ describe('compareModes + recommend', () => {
       provider: 'Google Routes API',
     };
     const cmp = compareModes({ rail: err }, { mode: 'now' }, ZONE, NOW);
-    expect(cmp.entries[2]).toMatchObject({ mode: 'rail', status: 'error', message: 'Falha ao consultar a Routes API.' });
+    expect(cmp.entries[2]).toMatchObject({
+      mode: 'rail',
+      status: 'error',
+      message: 'Falha ao consultar a Routes API.',
+    });
   });
 });

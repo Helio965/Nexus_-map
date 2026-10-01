@@ -96,7 +96,11 @@ export function RouteDetails({ option, result, onSelectOption, onFocusPoint }: P
             <ul className="traffic-legend" aria-label="Trânsito na rota (Routes API)">
               {traffic.map((t) => (
                 <li key={t.speed}>
-                  <span className="swatch" style={{ background: COLORS.traffic[t.speed] }} aria-hidden="true" />
+                  <span
+                    className="swatch"
+                    style={{ background: COLORS.traffic[t.speed] }}
+                    aria-hidden="true"
+                  />
                   {TRAFFIC_LABELS[t.speed]}: {formatDistance(t.meters)}
                 </li>
               ))}
@@ -108,7 +112,9 @@ export function RouteDetails({ option, result, onSelectOption, onFocusPoint }: P
               {!option.tolls.present
                 ? 'nenhum previsto pela Routes API'
                 : option.tolls.estimatedPrices.length > 0
-                  ? option.tolls.estimatedPrices.map((p) => formatMoney(p.amount, p.currencyCode)).join(' + ') + ' (estimativa da Routes API)'
+                  ? option.tolls.estimatedPrices
+                      .map((p) => formatMoney(p.amount, p.currencyCode))
+                      .join(' + ') + ' (estimativa da Routes API)'
                   : 'há pedágio no trajeto; valor não informado'}
             </p>
           )}
@@ -144,17 +150,27 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
         <li className={`seg seg--${seg.kind}`}>
           <p className="seg__title">
             <ModeIcon mode={seg.kind} size={16} />
-            {seg.label ?? (seg.kind === 'drive' ? 'De carro' : 'A pé')} · {formatDuration(seg.durationSeconds)} · {formatDistance(seg.distanceMeters)}
-            {seg.departure && <span className="seg__time"> · {formatTimePoint(seg.departure)}</span>}
+            {seg.label ?? (seg.kind === 'drive' ? 'De carro' : 'A pé')} ·{' '}
+            {formatDuration(seg.durationSeconds)} · {formatDistance(seg.distanceMeters)}
+            {seg.departure && (
+              <span className="seg__time"> · {formatTimePoint(seg.departure)}</span>
+            )}
           </p>
           {seg.steps.length > 0 && (
             <ol className="steps">
               {seg.steps.map((s, j) => (
                 <li key={j}>
-                  <button type="button" className="step" disabled={!s.startLocation} onClick={() => s.startLocation && onFocusPoint(s.startLocation)}>
+                  <button
+                    type="button"
+                    className="step"
+                    disabled={!s.startLocation}
+                    onClick={() => s.startLocation && onFocusPoint(s.startLocation)}
+                  >
                     <ManeuverGlyph maneuver={s.maneuver} />
                     <span className="step__text">{s.instruction}</span>
-                    {s.distanceMeters !== undefined && s.distanceMeters > 0 && <span className="step__dist">{formatDistance(s.distanceMeters)}</span>}
+                    {s.distanceMeters !== undefined && s.distanceMeters > 0 && (
+                      <span className="step__dist">{formatDistance(s.distanceMeters)}</span>
+                    )}
                   </button>
                 </li>
               ))}
@@ -168,15 +184,27 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
       return (
         <li className="seg seg--transit" style={{ ['--line' as string]: color }}>
           <p className="seg__title">
-            <span className="line-pill" style={{ background: color, color: normalizeColor(seg.line.textColor) ?? '#fff' }}>
+            <span
+              className="line-pill"
+              style={{ background: color, color: normalizeColor(seg.line.textColor) ?? '#fff' }}
+            >
               {lineName}
             </span>
             {seg.line.vehicleName ?? seg.line.vehicleType}
-            {seg.line.agencies.length > 0 && <span className="seg__agency"> · {seg.line.agencies.join(', ')}</span>}
+            {seg.line.agencies.length > 0 && (
+              <span className="seg__agency"> · {seg.line.agencies.join(', ')}</span>
+            )}
           </p>
           <ul className="transit-stops">
             <li>
-              <button type="button" className="link-btn" disabled={!seg.departureStop.location} onClick={() => seg.departureStop.location && onFocusPoint(seg.departureStop.location)}>
+              <button
+                type="button"
+                className="link-btn"
+                disabled={!seg.departureStop.location}
+                onClick={() =>
+                  seg.departureStop.location && onFocusPoint(seg.departureStop.location)
+                }
+              >
                 Embarque: <strong>{seg.departureStop.name}</strong>
               </button>{' '}
               às <time dateTime={seg.departure.instant}>{formatTimePoint(seg.departure)}</time>
@@ -184,14 +212,24 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
             {seg.headsign && <li>Sentido: {seg.headsign}</li>}
             {seg.stopCount !== undefined && <li>{seg.stopCount} parada(s) até o desembarque</li>}
             <li>
-              <button type="button" className="link-btn" disabled={!seg.arrivalStop.location} onClick={() => seg.arrivalStop.location && onFocusPoint(seg.arrivalStop.location)}>
+              <button
+                type="button"
+                className="link-btn"
+                disabled={!seg.arrivalStop.location}
+                onClick={() => seg.arrivalStop.location && onFocusPoint(seg.arrivalStop.location)}
+              >
                 Desembarque: <strong>{seg.arrivalStop.name}</strong>
               </button>{' '}
-              às <time dateTime={seg.arrival.instant}>{formatTimePoint(seg.arrival, seg.departure)}</time>
+              às{' '}
+              <time dateTime={seg.arrival.instant}>
+                {formatTimePoint(seg.arrival, seg.departure)}
+              </time>
             </li>
             <li className="muted">
               {formatDuration(seg.durationSeconds)}
-              {seg.headwaySeconds ? ` · intervalo entre partidas: ${formatDuration(seg.headwaySeconds)}` : ''}
+              {seg.headwaySeconds
+                ? ` · intervalo entre partidas: ${formatDuration(seg.headwaySeconds)}`
+                : ''}
             </li>
           </ul>
         </li>
@@ -202,7 +240,9 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
         <li className="seg seg--flight">
           <p className="seg__title">
             <ModeIcon mode="flight" size={16} /> Voo {seg.flight.ident}
-            {seg.flight.aircraftType && <span className="muted"> · aeronave {seg.flight.aircraftType}</span>}
+            {seg.flight.aircraftType && (
+              <span className="muted"> · aeronave {seg.flight.aircraftType}</span>
+            )}
           </p>
           <div className="flight-board">
             <div>
@@ -210,7 +250,12 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
               <span className="airport-name">{seg.from.name}</span>
               <span>
                 Partida <strong>{formatTimePoint(seg.departure)}</strong>
-                {seg.departure.timeZone && <span className="muted"> {formatZoneAbbrev(seg.departure.instant, seg.departure.timeZone)}</span>}
+                {seg.departure.timeZone && (
+                  <span className="muted">
+                    {' '}
+                    {formatZoneAbbrev(seg.departure.instant, seg.departure.timeZone)}
+                  </span>
+                )}
               </span>
             </div>
             <span className="flight-board__arrow" aria-hidden="true">
@@ -221,13 +266,19 @@ function SegmentItem({ seg, onFocusPoint }: { seg: Segment; onFocusPoint: (p: La
               <span className="airport-name">{seg.to.name}</span>
               <span>
                 Chegada <strong>{formatTimePoint(seg.arrival, seg.departure)}</strong>
-                {seg.arrival.timeZone && <span className="muted"> {formatZoneAbbrev(seg.arrival.instant, seg.arrival.timeZone)}</span>}
+                {seg.arrival.timeZone && (
+                  <span className="muted">
+                    {' '}
+                    {formatZoneAbbrev(seg.arrival.instant, seg.arrival.timeZone)}
+                  </span>
+                )}
               </span>
             </div>
           </div>
           <p className="muted">
-            Duração {formatDuration(seg.durationSeconds)} · horário publicado pela companhia ({seg.flight.provider}). No mapa, a linha tracejada é uma
-            representação do trecho aéreo, não a trajetória real da aeronave.
+            Duração {formatDuration(seg.durationSeconds)} · horário publicado pela companhia (
+            {seg.flight.provider}). No mapa, a linha tracejada é uma representação do trecho aéreo,
+            não a trajetória real da aeronave.
           </p>
         </li>
       );

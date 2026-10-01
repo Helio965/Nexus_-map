@@ -14,7 +14,13 @@ import {
 } from '@nexus/shared';
 import { FIELD_MASKS, type GoogleRoutesClient } from '../providers/google/GoogleRoutesClient';
 import type { ComputeRoutesBody, RawRoute, RawStep } from '../providers/google/routesTypes';
-import { fromRawLocation, mapSteps, moneyToNumber, toWaypoint, viewportToBounds } from './mappers/routeMapper';
+import {
+  fromRawLocation,
+  mapSteps,
+  moneyToNumber,
+  toWaypoint,
+  viewportToBounds,
+} from './mappers/routeMapper';
 import { ROUTES_PROVIDER } from './RouteService';
 
 /**
@@ -81,7 +87,8 @@ export class GoogleTransitService implements TransitProvider {
       method = 'Opções compatíveis com o horário de saída escolhido (departureTime).';
     } else if (req.time.mode === 'arrive_by' && req.time.instant) {
       body.arrivalTime = req.time.instant;
-      method = 'Opções que chegam até o horário escolhido (arrivalTime nativo da Routes API para TRANSIT).';
+      method =
+        'Opções que chegam até o horário escolhido (arrivalTime nativo da Routes API para TRANSIT).';
     }
 
     const res = await this.routes.computeRoutes(body, FIELD_MASKS.transit, signal);
@@ -99,17 +106,22 @@ export class GoogleTransitService implements TransitProvider {
 
     const warnings: string[] = [];
     if (excludedNonRail > 0 && options.length > 0) {
-      warnings.push(`${excludedNonRail} opção(ões) do provedor usava(m) ônibus ou outro veículo não ferroviário e foi(ram) omitida(s).`);
+      warnings.push(
+        `${excludedNonRail} opção(ões) do provedor usava(m) ônibus ou outro veículo não ferroviário e foi(ram) omitida(s).`,
+      );
     }
 
     let message: string | undefined;
     if (options.length === 0) {
       if (excludedNonRail > 0) {
-        message = 'Não há rota de metrô / trilhos disponível para este trajeto. O provedor só encontrou opções que dependem de ônibus ou outros veículos.';
+        message =
+          'Não há rota de metrô / trilhos disponível para este trajeto. O provedor só encontrou opções que dependem de ônibus ou outros veículos.';
       } else if (excludedWalkOnly > 0) {
-        message = 'Não há rota de metrô / trilhos disponível para este trajeto (o provedor sugeriu apenas caminhar).';
+        message =
+          'Não há rota de metrô / trilhos disponível para este trajeto (o provedor sugeriu apenas caminhar).';
       } else {
-        message = 'Não há rota de metrô / trilhos disponível para este trajeto. Isso também acontece quando a cidade não publica dados de transporte para o provedor.';
+        message =
+          'Não há rota de metrô / trilhos disponível para este trajeto. Isso também acontece quando a cidade não publica dados de transporte para o provedor.';
       }
     }
 
@@ -125,7 +137,8 @@ export class GoogleTransitService implements TransitProvider {
   }
 }
 
-type BuildResult = { kind: 'ok'; option: RouteOption } | { kind: 'non_rail' } | { kind: 'walk_only' };
+type BuildResult =
+  { kind: 'ok'; option: RouteOption } | { kind: 'non_rail' } | { kind: 'walk_only' };
 
 /** Converte uma rota TRANSIT em opção, agrupando passos de caminhada e validando os veículos. */
 export function buildTransitOption(route: RawRoute, index: number, req: RouteRequest): BuildResult {
@@ -142,7 +155,9 @@ export function buildTransitOption(route: RawRoute, index: number, req: RouteReq
     }
   }
 
-  const transitDrafts = drafts.filter((d): d is Extract<Draft, { kind: 'transit' }> => d.kind === 'transit');
+  const transitDrafts = drafts.filter(
+    (d): d is Extract<Draft, { kind: 'transit' }> => d.kind === 'transit',
+  );
   if (transitDrafts.length === 0) return { kind: 'walk_only' };
   const allRail = transitDrafts.every((d) =>
     RAIL_VEHICLE_TYPES.has(d.step.transitDetails?.transitLine?.vehicle?.type ?? ''),
@@ -171,9 +186,15 @@ export function buildTransitOption(route: RawRoute, index: number, req: RouteReq
     const next = segments[i + 1];
     if (prev && prev.kind === 'transit') {
       s.departure = { instant: prev.arrival.instant, timeZone: prev.arrival.timeZone };
-      s.arrival = { instant: addSeconds(prev.arrival.instant, s.durationSeconds), timeZone: i === segments.length - 1 ? req.destination.timeZone : prev.arrival.timeZone };
+      s.arrival = {
+        instant: addSeconds(prev.arrival.instant, s.durationSeconds),
+        timeZone: i === segments.length - 1 ? req.destination.timeZone : prev.arrival.timeZone,
+      };
     } else if (next && next.kind === 'transit') {
-      s.departure = { instant: addSeconds(next.departure.instant, -s.durationSeconds), timeZone: req.origin.timeZone };
+      s.departure = {
+        instant: addSeconds(next.departure.instant, -s.durationSeconds),
+        timeZone: req.origin.timeZone,
+      };
       s.arrival = { instant: next.departure.instant, timeZone: next.departure.timeZone };
     }
   }
@@ -181,9 +202,13 @@ export function buildTransitOption(route: RawRoute, index: number, req: RouteReq
   const first = segments[0]!;
   const last = segments[segments.length - 1]!;
   const departure =
-    first.kind === 'walk' && first.departure ? first.departure.instant : transitSegments[0]!.departure.instant;
+    first.kind === 'walk' && first.departure
+      ? first.departure.instant
+      : transitSegments[0]!.departure.instant;
   const arrival =
-    last.kind === 'walk' && last.arrival ? last.arrival.instant : transitSegments[transitSegments.length - 1]!.arrival.instant;
+    last.kind === 'walk' && last.arrival
+      ? last.arrival.instant
+      : transitSegments[transitSegments.length - 1]!.arrival.instant;
 
   const fare = route.travelAdvisory?.transitFare;
   const warnings = [...(route.warnings ?? [])];
@@ -211,7 +236,11 @@ export function buildTransitOption(route: RawRoute, index: number, req: RouteReq
       bounds: viewportToBounds(route),
       warnings,
       isDefault: index === 0,
-      summary: transitSegments.map((t) => t.line.shortName ?? t.line.name ?? t.line.vehicleName ?? '').filter(Boolean).join(' → ') || undefined,
+      summary:
+        transitSegments
+          .map((t) => t.line.shortName ?? t.line.name ?? t.line.vehicleName ?? '')
+          .filter(Boolean)
+          .join(' → ') || undefined,
       scheduleNote:
         'A saída considera chegar à estação exatamente no horário de embarque; não inclui margem extra.',
     },
@@ -263,7 +292,10 @@ function walkSegmentFrom(steps: RawStep[]): GroundSegment {
     kind: 'walk',
     polyline: encodePolyline(path),
     distanceMeters: steps.reduce((acc, s) => acc + (s.distanceMeters ?? 0), 0),
-    durationSeconds: steps.reduce((acc, s) => acc + (parseGoogleDuration(s.staticDuration) ?? 0), 0),
+    durationSeconds: steps.reduce(
+      (acc, s) => acc + (parseGoogleDuration(s.staticDuration) ?? 0),
+      0,
+    ),
     steps: navSteps,
   };
 }

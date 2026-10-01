@@ -27,10 +27,15 @@ export class ApiError extends Error {
 }
 
 export function isAbort(err: unknown): boolean {
-  return err instanceof DOMException ? err.name === 'AbortError' : (err as Error)?.name === 'AbortError';
+  return err instanceof DOMException
+    ? err.name === 'AbortError'
+    : (err as Error)?.name === 'AbortError';
 }
 
-async function request<T>(path: string, init: { method?: 'GET' | 'POST'; body?: unknown; signal?: AbortSignal } = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  init: { method?: 'GET' | 'POST'; body?: unknown; signal?: AbortSignal } = {},
+): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${config.apiBaseUrl}/api${path}`, {
@@ -41,13 +46,21 @@ async function request<T>(path: string, init: { method?: 'GET' | 'POST'; body?: 
     });
   } catch (err) {
     if (isAbort(err)) throw err;
-    throw new ApiError('NETWORK', 'Não foi possível conectar ao servidor do Nexus Map. Verifique sua conexão.', 0);
+    throw new ApiError(
+      'NETWORK',
+      'Não foi possível conectar ao servidor do Nexus Map. Verifique sua conexão.',
+      0,
+    );
   }
   const text = await res.text();
   const data = text ? (JSON.parse(text) as unknown) : undefined;
   if (!res.ok) {
     const body = data as ApiErrorBody | undefined;
-    throw new ApiError(body?.error?.code ?? 'INTERNAL', body?.error?.message ?? `Erro ${res.status} no servidor.`, res.status);
+    throw new ApiError(
+      body?.error?.code ?? 'INTERNAL',
+      body?.error?.message ?? `Erro ${res.status} no servidor.`,
+      res.status,
+    );
   }
   return data as T;
 }
@@ -65,7 +78,10 @@ export const api = {
   },
 
   placeDetails: (placeId: string, session: string, signal?: AbortSignal) =>
-    request<PlaceSummary>(`/places/details/${encodeURIComponent(placeId)}?session=${encodeURIComponent(session)}`, { signal }),
+    request<PlaceSummary>(
+      `/places/details/${encodeURIComponent(placeId)}?session=${encodeURIComponent(session)}`,
+      { signal },
+    ),
 
   reverse: (location: LatLng, signal?: AbortSignal) =>
     request<PlaceSummary>(`/places/reverse?lat=${location.lat}&lng=${location.lng}`, { signal }),
@@ -77,7 +93,10 @@ export const api = {
     request<SignalLayerResponse>('/signals/route', { method: 'POST', body: { polyline }, signal }),
 
   signalStates: (streamIds: string[], signal?: AbortSignal) =>
-    request<SignalStateSnapshot>(`/signals/state?streams=${encodeURIComponent(streamIds.join(','))}`, { signal }),
+    request<SignalStateSnapshot>(
+      `/signals/state?streams=${encodeURIComponent(streamIds.join(','))}`,
+      { signal },
+    ),
 
   signalDemo: (polyline: string, signal?: AbortSignal) =>
     request<DemoSignalResponse>('/signals/demo', { method: 'POST', body: { polyline }, signal }),

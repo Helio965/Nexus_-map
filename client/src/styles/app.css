@@ -549,7 +549,11 @@ code {
 }
 .notice--demo {
   border: 2px dashed var(--signal);
-  background: repeating-linear-gradient(-45deg, rgba(245, 165, 36, 0.12) 0 10px, rgba(245, 165, 36, 0.04) 10px 20px);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(245, 165, 36, 0.12) 0 10px,
+    rgba(245, 165, 36, 0.04) 10px 20px
+  );
 }
 
 .badge {
@@ -674,8 +678,7 @@ code {
   padding: 16px;
   border-radius: var(--radius-m);
   background:
-    radial-gradient(120% 140% at 100% 0%, rgba(245, 165, 36, 0.18), transparent 55%),
-    var(--ink-800);
+    radial-gradient(120% 140% at 100% 0%, rgba(245, 165, 36, 0.18), transparent 55%), var(--ink-800);
   border: 1px solid rgba(245, 165, 36, 0.45);
   animation: rise 420ms var(--ease-out) both;
 }
@@ -795,6 +798,12 @@ button.mode-card:hover {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 15px;
+}
+.mode-card__duration,
+.mode-card__meta,
+.mode-card__message,
+.deadline {
+  display: block;
 }
 .mode-card__duration {
   margin: 4px 0 0;
@@ -1350,7 +1359,11 @@ button.mode-card:hover {
   cursor: not-allowed;
 }
 .toggle--demo.is-on {
-  background: repeating-linear-gradient(-45deg, rgba(245, 165, 36, 0.3) 0 6px, rgba(245, 165, 36, 0.12) 6px 12px);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(245, 165, 36, 0.3) 0 6px,
+    rgba(245, 165, 36, 0.12) 6px 12px
+  );
   color: var(--paper);
 }
 
@@ -1481,7 +1494,11 @@ button.mode-card:hover {
 }
 .sig--demo {
   border-style: dashed;
-  background-image: repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.06) 0 5px, transparent 5px 10px);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.06) 0 5px,
+    transparent 5px 10px
+  );
 }
 .sig--demo i {
   font-style: normal;

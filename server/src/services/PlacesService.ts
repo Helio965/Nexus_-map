@@ -1,4 +1,9 @@
-import { isValidTimeZone, type LatLng, type PlaceSuggestion, type PlaceSummary } from '@nexus/shared';
+import {
+  isValidTimeZone,
+  type LatLng,
+  type PlaceSuggestion,
+  type PlaceSummary,
+} from '@nexus/shared';
 import { TtlCache, cacheKey } from '../lib/cache';
 import { AppError } from '../lib/errors';
 import type { GoogleGeocodingClient } from '../providers/google/GoogleLegacyClients';
@@ -26,7 +31,11 @@ export class PlacesService {
   ): Promise<PlaceSuggestion[]> {
     const trimmed = input.trim();
     if (trimmed.length < 3) return [];
-    const key = cacheKey([trimmed.toLowerCase(), opts.bias?.lat.toFixed(2), opts.bias?.lng.toFixed(2)]);
+    const key = cacheKey([
+      trimmed.toLowerCase(),
+      opts.bias?.lat.toFixed(2),
+      opts.bias?.lng.toFixed(2),
+    ]);
     const cached = this.autocompleteCache.get(key);
     if (cached) return cached;
 
@@ -55,7 +64,11 @@ export class PlacesService {
     return suggestions;
   }
 
-  async details(placeId: string, sessionToken: string | undefined, signal?: AbortSignal): Promise<PlaceSummary> {
+  async details(
+    placeId: string,
+    sessionToken: string | undefined,
+    signal?: AbortSignal,
+  ): Promise<PlaceSummary> {
     const raw = await this.places.details(placeId, sessionToken, signal);
     const lat = raw.location?.latitude;
     const lng = raw.location?.longitude;

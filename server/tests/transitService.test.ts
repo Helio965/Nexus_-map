@@ -9,7 +9,12 @@ describe('GoogleTransitService.rail (metrô / trilhos)', () => {
     const { client, calls } = fakeRoutesClient(() => ({ routes: [railRoute()] }));
     await new GoogleTransitService(client, opts).rail(request({ mode: 'now' }));
     expect(calls[0]!.body.travelMode).toBe('TRANSIT');
-    expect(calls[0]!.body.transitPreferences?.allowedTravelModes).toEqual(['SUBWAY', 'TRAIN', 'LIGHT_RAIL', 'RAIL']);
+    expect(calls[0]!.body.transitPreferences?.allowedTravelModes).toEqual([
+      'SUBWAY',
+      'TRAIN',
+      'LIGHT_RAIL',
+      'RAIL',
+    ]);
     expect(calls[0]!.body.transitPreferences?.allowedTravelModes).not.toContain('BUS');
   });
 
@@ -32,14 +37,22 @@ describe('GoogleTransitService.rail (metrô / trilhos)', () => {
     expect(opt.segments.map((s) => s.kind)).toEqual(['walk', 'transit', 'walk', 'transit', 'walk']);
 
     const [walk1, metro, transfer, train, walk2] = opt.segments;
-    if (metro?.kind !== 'transit' || train?.kind !== 'transit') throw new Error('esperava trechos de trilhos');
+    if (metro?.kind !== 'transit' || train?.kind !== 'transit')
+      throw new Error('esperava trechos de trilhos');
     expect(metro.departureStop.name).toBe('Estação Alfa');
     expect(metro.arrivalStop.name).toBe('Estação Beta');
-    expect(metro.line).toMatchObject({ shortName: 'M1', vehicleType: 'SUBWAY', agencies: ['Operadora Sintética'] });
+    expect(metro.line).toMatchObject({
+      shortName: 'M1',
+      vehicleType: 'SUBWAY',
+      agencies: ['Operadora Sintética'],
+    });
     expect(metro.headsign).toBe('Terminal Sintético Sul');
     expect(metro.stopCount).toBe(6);
     expect(metro.headwaySeconds).toBe(600);
-    expect(metro.departure).toEqual({ instant: '2026-10-20T11:07:00Z', timeZone: 'America/Sao_Paulo' });
+    expect(metro.departure).toEqual({
+      instant: '2026-10-20T11:07:00Z',
+      timeZone: 'America/Sao_Paulo',
+    });
     expect(train.line.vehicleType).toBe('HEAVY_RAIL');
 
     // Caminhada inicial termina no embarque; a de baldeação começa no desembarque anterior.
@@ -75,11 +88,21 @@ describe('GoogleTransitService.rail (metrô / trilhos)', () => {
     const { client } = fakeRoutesClient(() => ({}));
     const result = await new GoogleTransitService(client, opts).rail(request({ mode: 'now' }));
     expect(result.status).toBe('unavailable');
-    expect(result.message).toMatch(/^Não há rota de metrô \/ trilhos disponível para este trajeto\./);
+    expect(result.message).toMatch(
+      /^Não há rota de metrô \/ trilhos disponível para este trajeto\./,
+    );
   });
 
   it('não classifica ônibus, balsa ou teleférico como trilhos', () => {
-    for (const t of ['BUS', 'INTERCITY_BUS', 'TROLLEYBUS', 'FERRY', 'GONDOLA_LIFT', 'SHARE_TAXI', 'OTHER']) {
+    for (const t of [
+      'BUS',
+      'INTERCITY_BUS',
+      'TROLLEYBUS',
+      'FERRY',
+      'GONDOLA_LIFT',
+      'SHARE_TAXI',
+      'OTHER',
+    ]) {
       expect(RAIL_VEHICLE_TYPES.has(t)).toBe(false);
     }
     for (const t of ['SUBWAY', 'METRO_RAIL', 'HEAVY_RAIL', 'COMMUTER_TRAIN', 'TRAM']) {

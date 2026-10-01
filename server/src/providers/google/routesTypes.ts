@@ -101,7 +101,8 @@ export interface RawComputeRoutesResponse {
   routes?: RawRoute[];
   geocodingResults?: { origin?: RawGeocodedWaypoint; destination?: RawGeocodedWaypoint };
   fallbackInfo?: {
-    routingMode?: 'FALLBACK_ROUTING_MODE_UNSPECIFIED' | 'FALLBACK_TRAFFIC_UNAWARE' | 'FALLBACK_TRAFFIC_AWARE';
+    routingMode?:
+      'FALLBACK_ROUTING_MODE_UNSPECIFIED' | 'FALLBACK_TRAFFIC_UNAWARE' | 'FALLBACK_TRAFFIC_AWARE';
     reason?: 'FALLBACK_REASON_UNSPECIFIED' | 'SERVER_ERROR' | 'LATENCY_EXCEEDED';
   };
 }

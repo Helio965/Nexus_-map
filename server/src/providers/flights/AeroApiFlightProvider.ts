@@ -52,7 +52,10 @@ export class AeroApiFlightProvider implements FlightProvider {
     this.fetchFn = opts.fetchFn ?? fetch;
   }
 
-  async searchDirectFlights(q: DirectFlightQuery, signal?: AbortSignal): Promise<ScheduledFlight[]> {
+  async searchDirectFlights(
+    q: DirectFlightQuery,
+    signal?: AbortSignal,
+  ): Promise<ScheduledFlight[]> {
     // Janela alargada para horas cheias (início para baixo, fim para cima) para aproveitar o
     // cache entre consultas próximas; o FlightService filtra os voos pela janela exata.
     const start = floorHour(q.departureWindowStart);
@@ -63,9 +66,13 @@ export class AeroApiFlightProvider implements FlightProvider {
 
     const pages = Math.max(1, this.opts.maxPages ?? 2);
     if (!(await this.throttle.acquire(signal))) {
-      throw new AppError('RATE_LIMITED', 'Limite de consultas de voos por minuto atingido. Tente novamente em instantes.', {
-        provider: AEROAPI_NAME,
-      });
+      throw new AppError(
+        'RATE_LIMITED',
+        'Limite de consultas de voos por minuto atingido. Tente novamente em instantes.',
+        {
+          provider: AEROAPI_NAME,
+        },
+      );
     }
     const qs = new URLSearchParams({
       origin: q.originIata,
@@ -96,7 +103,8 @@ export function mapSchedules(raw: RawAeroApiSchedules): ScheduledFlight[] {
   const seen = new Set<string>();
   const out: ScheduledFlight[] = [];
   for (const f of raw.scheduled ?? []) {
-    if (!f.ident || !f.scheduled_out || !f.scheduled_in || !f.origin_iata || !f.destination_iata) continue;
+    if (!f.ident || !f.scheduled_out || !f.scheduled_in || !f.origin_iata || !f.destination_iata)
+      continue;
     const operator = f.actual_ident_iata ?? f.actual_ident ?? undefined;
     const ident = f.ident_iata ?? f.ident;
     const dedupe = `${f.origin_iata}|${f.destination_iata}|${f.scheduled_out}|${f.scheduled_in}|${operator ?? ident}`;
@@ -121,23 +129,37 @@ function mapAeroApiError(err: unknown): unknown {
   if (!(err instanceof UpstreamHttpError)) return err;
   const body = (err.body ?? {}) as { title?: string; detail?: string };
   if (err.status === 401 || err.status === 403) {
-    return new AppError('UPSTREAM', 'A chave da AeroAPI foi recusada (verifique FLIGHTAWARE_AEROAPI_KEY e o plano contratado).', {
-      provider: AEROAPI_NAME,
-      details: body.detail,
-    });
+    return new AppError(
+      'UPSTREAM',
+      'A chave da AeroAPI foi recusada (verifique FLIGHTAWARE_AEROAPI_KEY e o plano contratado).',
+      {
+        provider: AEROAPI_NAME,
+        details: body.detail,
+      },
+    );
   }
   if (err.status === 429) {
-    return new AppError('RATE_LIMITED', 'Limite de consultas da AeroAPI atingido. Tente novamente em instantes.', {
-      provider: AEROAPI_NAME,
-    });
+    return new AppError(
+      'RATE_LIMITED',
+      'Limite de consultas da AeroAPI atingido. Tente novamente em instantes.',
+      {
+        provider: AEROAPI_NAME,
+      },
+    );
   }
   if (err.status === 400) {
-    return new AppError('UPSTREAM', `A AeroAPI recusou a consulta${body.detail ? `: ${body.detail}` : '.'}`, {
-      provider: AEROAPI_NAME,
-      details: body.detail,
-    });
+    return new AppError(
+      'UPSTREAM',
+      `A AeroAPI recusou a consulta${body.detail ? `: ${body.detail}` : '.'}`,
+      {
+        provider: AEROAPI_NAME,
+        details: body.detail,
+      },
+    );
   }
-  return new AppError('UPSTREAM', 'A AeroAPI está temporariamente indisponível.', { provider: AEROAPI_NAME });
+  return new AppError('UPSTREAM', 'A AeroAPI está temporariamente indisponível.', {
+    provider: AEROAPI_NAME,
+  });
 }
 
 function floorHour(iso: string): string {
