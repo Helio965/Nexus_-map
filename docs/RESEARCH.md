@@ -399,3 +399,17 @@ Regras determinísticas e explicáveis (sem IA): (1) atende ao prazo; (2) menor 
 (3) saída mais tarde (no modo "Chegar até"); (4) menos baldeações; (5) atraso por trânsito
 (`duration − staticDuration`) só quando a API o forneceu; (6) apenas modos disponíveis.
 Cada motivo exibido é derivado de um valor numérico presente na resposta.
+
+---
+
+## 6. Verificações realizadas durante a implementação (2026-10-01)
+
+| Verificação | Resultado |
+|---|---|
+| Hamburg TLD — consulta espacial (`st_intersects` com `or` de `POLYGON`; `MULTIPOLYGON` **não** é aceito pelo servidor) | OK |
+| Hamburg TLD — conexão de faixa real `151_20` usada como trajeto | Fase associada no sentido da faixa ("sentido sul → norte", 🔴 vermelho); no sentido oposto, **nenhuma** fase (`direction_unknown`) |
+| Hamburg TLD — MQTT via WebSocket (`wss://tld.iot.hamburg.de:443/mqtt`) → SSE do servidor | Transições reais recebidas ao vivo (amarelo → vermelho) em segundos |
+| Ordem do `MultiLineString` das conexões de faixa | [entrada (começa na retenção = FeatureOfInterest `_Stop`), percurso no cruzamento, saída], confirmada em várias conexões |
+| OurAirports `airports.csv` | Baixado (12,7 MB); filtros de porte, voos regulares e IATA validados |
+| Overpass API (instâncias públicas) | **Inacessível a partir do ambiente de desenvolvimento** (conexão encerrada pelo destino). A aplicação reporta "OpenStreetMap (Overpass) temporariamente indisponível"; a lógica foi validada com fixtures |
+| Google Maps Platform / AeroAPI | Sem credenciais no ambiente: verificados o modo "não configurado", mapeamento de erros e respostas por fixtures no formato oficial. Nenhuma chamada real foi feita |
